@@ -4,8 +4,10 @@
 #include <QObject>
 #include <QFileSystemModel>
 #include <QCoreApplication>
+
 #include "settings_manager.h"
 #include "file_handler.h"
+#include "network_manager.h"
 
 class ClientModel : public QObject
 {
@@ -32,10 +34,15 @@ private slots:
 
     void deleteHandle(QModelIndexList& listIndex, bool deleteInServer);
 
+    // connect to Server
+    void connectToServer(const bool& saveInformation, const QString& serverAddress, const QString& serverPort);
+    void disconnectButton();
+
 
 private:
     void setFileSystem(QString pathDir);
 
+    NetworkManager m_networkManager;
     SettingsManager m_settingsManager;
     QString m_currentLocalDir;
     // QString currentServerDir;

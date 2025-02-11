@@ -22,6 +22,7 @@ public:
 signals:
     void openFolderSignal(const QString& dir, bool openInServer);
     void deleteSignal(QModelIndexList& listIndex, bool deleteInServer);
+    void connectToServerSignal(const bool& saveInformation, const QString& serverAddress, const QString& serverPort);
 
 public slots:
     void writeTextToOutput(QString text, QColor color);
@@ -35,6 +36,9 @@ public slots:
 
     // clear
     void clearOutput();
+
+    // connect to Server
+    void connectToServer();
 
 private:
 

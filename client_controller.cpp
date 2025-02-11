@@ -38,7 +38,9 @@ void ClientController::connectWindowSignalSlots(QList<bool> &connectionResults)
     /*
      * Connect to Server
      */
-
+    connectionResults.append(connect(m_window.ui->connectButton, &QPushButton::clicked, &m_window, &ClientWindow::connectToServer));
+    connectionResults.append(connect(&m_window, &ClientWindow::connectToServerSignal, &m_model, &ClientModel::connectToServer));
+    connectionResults.append(connect(m_window.ui->disconnectButton, &QPushButton::clicked, &m_model, &ClientModel::disconnectButton));
 
     /*
      * Other functions
@@ -57,4 +59,6 @@ void ClientController::connectModelSignalSlots(QList<bool> &connectionResults)
     // Connect Data (model) to UI (window)
     connectionResults.append(connect(&m_model, &ClientModel::writeTextSignal, &m_window, &ClientWindow::writeTextToOutput));
     connectionResults.append(connect(&m_model, &ClientModel::setLocalFileSystemSignal, &m_window, &ClientWindow::setLocalFileSystem));
+
+    connectionResults.append(connect(&m_model.m_networkManager, &NetworkManager::writeTextSignal, &m_window, &ClientWindow::writeTextToOutput));
 }

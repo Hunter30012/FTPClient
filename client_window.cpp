@@ -78,3 +78,8 @@ void ClientWindow::clearOutput()
     ui->textOutput->clear();
 }
 
+void ClientWindow::connectToServer()
+{
+    emit connectToServerSignal(ui->checkBox->isChecked(), ui->addressEdit->text(), ui->portEdit->text());
+}
+
