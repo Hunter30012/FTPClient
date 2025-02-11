@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icon/exit.png</file>
+        <file>icon/folder_open.png</file>
+        <file>icon/home.png</file>
+        <file>icon/left_upload.jpg</file>
+        <file>icon/return.png</file>
+        <file>icon/search.jpg</file>
+        <file>icon/delelte.png</file>
+        <file>icon/right.jpg</file>
+        <file>icon/clear.png</file>
+    </qresource>
+</RCC>
