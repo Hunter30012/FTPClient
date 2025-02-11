@@ -33,13 +33,11 @@ void ClientWindow::setLocalFileSystem(QFileSystemModel* model)
     ui->localSearchEdit->setText(m_currentLocalPath);
 }
 
-void ClientWindow::initClientWindow(const bool &isChecked, const QString &serverAddress, const QString &serverPort, const QString &userName, const QString &userPassword)
+void ClientWindow::initClientWindow(const bool &isChecked, const QString &serverAddress, const QString &serverPort)
 {
     ui->checkBox->setChecked(isChecked);
     ui->addressEdit->setText(serverAddress);
     ui->portEdit->setText(serverPort);
-    ui->usernameEdit->setText(userName);
-    ui->passwordEdit->setText(userPassword);
 }
 
 void ClientWindow::openInLocal()

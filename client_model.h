@@ -21,9 +21,7 @@ signals:
     void setLocalFileSystemSignal(QFileSystemModel* model);
     void initClientWindowSignal(const bool& checkboxChecked,
                           const QString& serverAddress,
-                          const QString& serverPort,
-                          const QString& userName,
-                          const QString& userPassword);
+                          const QString& serverPort);
 
 private slots:
     // Local Interaction

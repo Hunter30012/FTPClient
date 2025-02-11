@@ -12,20 +12,20 @@
 #define DEFAULT_LOCAL_DIR "defaultLocalDirectory"
 #define ADDRESS "serverAddress"
 #define PORT "serverPort"
-#define USERNAME "userName"
-#define PASSWORD "userPassword"
+// #define USERNAME "userName"
+// #define PASSWORD "userPassword"
 
 struct savedConnection
 {
-    savedConnection(bool _checkboxChecked,QString _serverAddress, QString _serverPort, QString _userName, QString _userPassword) :
-        checkboxChecked(_checkboxChecked), serverAddress(_serverAddress), serverPort(_serverPort), userName(_userName), userPassword(_userPassword)
+    savedConnection(bool _checkboxChecked,QString _serverAddress, QString _serverPort) :
+        checkboxChecked(_checkboxChecked), serverAddress(_serverAddress), serverPort(_serverPort)
     {};
 
     bool checkboxChecked;
     QString serverAddress;
     QString serverPort;
-    QString userName;
-    QString userPassword;
+    // QString userName;
+    // QString userPassword;
 };
 
 class SettingsManager : public QObject
@@ -37,7 +37,7 @@ public:
     QString getDefaultDirectory();
     savedConnection getSavedConnection();
 
-    void setSavedConnection(const bool& checkboxChecked ,const QString& serverAddress, const QString& serverPort, const QString& userName, const QString& userPassword);
+    void setSavedConnection(const bool& checkboxChecked ,const QString& serverAddress, const QString& serverPort);
     void setDefaultDirectory(QString directory);
 
 signals:

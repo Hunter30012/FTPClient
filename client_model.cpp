@@ -20,9 +20,7 @@ void ClientModel::init()
     //
     emit initClientWindowSignal(saved.checkboxChecked,
                                 saved.serverAddress,
-                                saved.serverPort,
-                                saved.userName,
-                                saved.userPassword);
+                                saved.serverPort);
     emit setLocalFileSystemSignal(m_localFileSystem);
     emit writeTextSignal("App Start!", Qt::blue);
 }

@@ -16,19 +16,15 @@ savedConnection SettingsManager::getSavedConnection()
 {
     return savedConnection(m_settings->value(IS_SAVED).toBool(),
                            m_settings->value(ADDRESS).toString(),
-                           m_settings->value(PORT).toString(),
-                           m_settings->value(USERNAME).toString(),
-                           m_settings->value(PASSWORD).toString());
+                           m_settings->value(PORT).toString());
 }
 
 // set
-void SettingsManager::setSavedConnection(const bool &checkboxChecked, const QString &serverAddress, const QString &serverPort, const QString &userName, const QString &userPassword)
+void SettingsManager::setSavedConnection(const bool &checkboxChecked, const QString &serverAddress, const QString &serverPort)
 {
     m_settings->setValue(IS_SAVED, checkboxChecked);
     m_settings->setValue(ADDRESS, serverAddress);
     m_settings->setValue(PORT, serverPort);
-    m_settings->setValue(USERNAME, userName);
-    m_settings->setValue(PASSWORD, userPassword);
 }
 
 void SettingsManager::setDefaultDirectory(QString directory)

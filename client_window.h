@@ -28,9 +28,7 @@ public slots:
     void setLocalFileSystem(QFileSystemModel* model);
     void initClientWindow(const bool& isChecked,
                           const QString& serverAddress,
-                          const QString& serverPort,
-                          const QString& userName,
-                          const QString& userPassword);
+                          const QString& serverPort);
     void openInLocal();
     void localSearch();
     void deleteInLocal(); // need add more logic
