@@ -19,7 +19,7 @@ public:
 
 
 private:
-    void connectViewSignalSlots(QList<bool>& connectionResults);
+    void connectWindowSignalSlots(QList<bool>& connectionResults);
     void connectModelSignalSlots(QList<bool>& connectionResults);
 
     QApplication m_app;

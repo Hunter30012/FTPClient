@@ -5,7 +5,7 @@ ClientController::ClientController(int argc, char *argv[], QWidget *parent)
 {
     QList<bool> connectionResults;
 
-    connectViewSignalSlots(connectionResults);
+    connectWindowSignalSlots(connectionResults);
     connectModelSignalSlots(connectionResults);
 
     Q_ASSERT(!connectionResults.contains(false));
@@ -18,7 +18,7 @@ int ClientController::init()
     return m_app.exec();
 }
 
-void ClientController::connectViewSignalSlots(QList<bool> &connectionResults)
+void ClientController::connectWindowSignalSlots(QList<bool> &connectionResults)
 {
     /*
      * Local File System Function
@@ -40,13 +40,19 @@ void ClientController::connectViewSignalSlots(QList<bool> &connectionResults)
      */
 
 
-    //
+    /*
+     * Other functions
+     */
+
+
+    // clear Output log
     connectionResults.append(connect(m_window.ui->clearButton, &QPushButton::clicked, &m_window, &ClientWindow::clearOutput));
 }
 
 void ClientController::connectModelSignalSlots(QList<bool> &connectionResults)
 {
-    // connect init ClientView: setup saved information (pending)
+    // connect init ClientView: setup saved information
+    connectionResults.append(connect(&m_model, &ClientModel::initClientWindowSignal, &m_window, &ClientWindow::initClientWindow));
 
     // Connect Data (model) to UI (window)
     connectionResults.append(connect(&m_model, &ClientModel::writeTextSignal, &m_window, &ClientWindow::writeTextToOutput));
