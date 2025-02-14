@@ -35,17 +35,21 @@ private slots:
     void deleteHandle(QModelIndexList& listIndex, bool deleteInServer);
 
     // connect to Server
-    void connectToServer(const bool& saveInformation, const QString& serverAddress, const QString& serverPort);
+    void connectToServer(const bool& saveInformation, const QString& serverAddress, const QString& serverPort, const bool& isActive);
     void disconnectButton();
 
+    // handle data from Server
+    void parseJsonRecd(const QByteArray& jsonArray);
 
 private:
     void setFileSystem(QString pathDir);
 
     NetworkManager m_networkManager;
     SettingsManager m_settingsManager;
+
+    QString pathFileUploading;
     QString m_currentLocalDir;
-    // QString currentServerDir;
+    QString currentServerDir;
 
     QFileSystemModel* m_localFileSystem;
 };

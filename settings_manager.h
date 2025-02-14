@@ -12,8 +12,6 @@
 #define DEFAULT_LOCAL_DIR "defaultLocalDirectory"
 #define ADDRESS "serverAddress"
 #define PORT "serverPort"
-// #define USERNAME "userName"
-// #define PASSWORD "userPassword"
 
 struct savedConnection
 {
@@ -24,8 +22,6 @@ struct savedConnection
     bool checkboxChecked;
     QString serverAddress;
     QString serverPort;
-    // QString userName;
-    // QString userPassword;
 };
 
 class SettingsManager : public QObject

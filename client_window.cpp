@@ -7,7 +7,15 @@ ClientWindow::ClientWindow(QWidget *parent)
     ui->setupUi(this);
     setWindowTitle("My FTP Client");
 
+    ui->serverDeleteButton->setDisabled(true);
+    ui->serverUploadButton->setDisabled(true);
+    ui->serverReturnButton->setDisabled(true);
+    ui->serverSearchButton->setDisabled(true);
+    ui->serverSearchEdit->setDisabled(true);
+    ui->serverHomeButton->setDisabled(true);
 
+    ui->disconnectButton->setDisabled(true);
+    ui->localUploadButton->setDisabled(true);
 }
 
 ClientWindow::~ClientWindow()
@@ -80,6 +88,17 @@ void ClientWindow::clearOutput()
 
 void ClientWindow::connectToServer()
 {
-    emit connectToServerSignal(ui->checkBox->isChecked(), ui->addressEdit->text(), ui->portEdit->text());
+    bool isActive;
+    if(ui->activeButton->isChecked()) {
+        isActive = true;
+        qDebug() << "Selected Active mode";
+    } else if(ui->passiveButton->isChecked()) {
+        isActive = false;
+        qDebug() << "Selected Passive mode";
+    } else {
+        writeTextToOutput("Please select the mode!", Qt::red);
+        return;
+    }
+    emit connectToServerSignal(ui->checkBox->isChecked(), ui->addressEdit->text(), ui->portEdit->text(), isActive);
 }
 

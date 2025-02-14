@@ -1,15 +1,9 @@
 #include "network_manager.h"
 
 NetworkManager::NetworkManager(QObject *parent)
-    : QObject{parent}, m_isDownloading {false}, m_tcpSocket {parent}
+    : QObject{parent}, m_isDownloading {false}
 {
-    connect(&m_tcpSocket, &QTcpSocket::connected, this, &NetworkManager::connected);
-    connect(&m_tcpSocket, &QTcpSocket::disconnected, this, &NetworkManager::disconnect);
 
-    connect(&m_tcpSocket, &QTcpSocket::stateChanged, this, &NetworkManager::stateChanged);
-    connect(&m_tcpSocket, &QTcpSocket::readyRead, this, &NetworkManager::readyRead);
-
-    connect(&m_tcpSocket, &QTcpSocket::errorOccurred, this, &NetworkManager::errorOccured);
 }
 
 bool NetworkManager::isValidPort(const QString &port)
@@ -24,23 +18,23 @@ bool NetworkManager::isValidPort(const QString &port)
     return isNumber && (portNumber >= 1 && portNumber <= 65535);
 }
 
-void NetworkManager::connectToServer(const QString &serverAddress, const QString &serverPort)
+void NetworkManager::connectToServer(const QString &serverAddress, const QString &serverPort, const bool& isActive)
 {
     emit writeTextSignal("Attemping to connecting to server at " + serverAddress + ":" + serverPort);
 
-    if(m_tcpSocket.isOpen()) {
-        disconnect();
-    }
-    int port = serverPort.toUInt();
+    // if(m_tcpSocket.isOpen()) {
+    //     disconnect();
+    // }
+    // int port = serverPort.toUInt();
 
-    m_tcpSocket.connectToHost(serverAddress, port);
+    // m_tcpSocket.connectToHost(serverAddress, port);
 }
 
 void NetworkManager::disconnect()
 {
-    m_tcpSocket.close();
-    m_tcpSocket.waitForDisconnected();
-    m_isDownloading = false;
+    // m_tcpSocket.close();
+    // m_tcpSocket.waitForDisconnected();
+    // m_isDownloading = false;
 }
 
 void NetworkManager::connected()
@@ -56,7 +50,17 @@ void NetworkManager::disconnected()
 
 void NetworkManager::readyRead()
 {
+    // QByteArray data = (m_isDownloading) ? m_tcpSocket.readAll() : parseByteData();
 
+    // if (data.isEmpty()) {
+    //     return;
+    // }
+
+    // if (m_isDownloading) {
+    //     parseByteDownload(data);
+    // } else {
+    //     emit parseJsonRecdSignal(data);
+    // }
 }
 
 void NetworkManager::stateChanged(QAbstractSocket::SocketState socketState)
@@ -81,10 +85,10 @@ void NetworkManager::errorOccured(QAbstractSocket::SocketError socketError)
 
 void NetworkManager::witeData(const QByteArray &data)
 {
-    m_tcpSocket.write(data);
+    // m_tcpSocket.write(data);
 }
 
-QByteArray NetworkManager::readAll()
-{
-    return m_tcpSocket.readAll();
-}
+// QByteArray NetworkManager::readAll()
+// {
+//     return m_tcpSocket.readAll();
+// }

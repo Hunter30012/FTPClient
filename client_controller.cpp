@@ -42,6 +42,7 @@ void ClientController::connectWindowSignalSlots(QList<bool> &connectionResults)
     connectionResults.append(connect(&m_window, &ClientWindow::connectToServerSignal, &m_model, &ClientModel::connectToServer));
     connectionResults.append(connect(m_window.ui->disconnectButton, &QPushButton::clicked, &m_model, &ClientModel::disconnectButton));
 
+
     /*
      * Other functions
      */
@@ -60,5 +61,8 @@ void ClientController::connectModelSignalSlots(QList<bool> &connectionResults)
     connectionResults.append(connect(&m_model, &ClientModel::writeTextSignal, &m_window, &ClientWindow::writeTextToOutput));
     connectionResults.append(connect(&m_model, &ClientModel::setLocalFileSystemSignal, &m_window, &ClientWindow::setLocalFileSystem));
 
+    // Network
     connectionResults.append(connect(&m_model.m_networkManager, &NetworkManager::writeTextSignal, &m_window, &ClientWindow::writeTextToOutput));
+
+    connectionResults.append(connect(&m_model.m_networkManager, &NetworkManager::parseJsonRecdSignal, &m_model, &ClientModel::parseJsonRecd));
 }

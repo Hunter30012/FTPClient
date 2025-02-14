@@ -17,7 +17,7 @@ void ClientModel::init()
 {
     // Get saved data
     savedConnection saved = m_settingsManager.getSavedConnection();
-    //
+
     emit initClientWindowSignal(saved.checkboxChecked,
                                 saved.serverAddress,
                                 saved.serverPort);
@@ -101,7 +101,7 @@ void ClientModel::deleteHandle(QModelIndexList &listIndex, bool deleteInServer)
     }
 }
 
-void ClientModel::connectToServer(const bool &saveInformation, const QString &serverAddress, const QString &serverPort)
+void ClientModel::connectToServer(const bool &saveInformation, const QString &serverAddress, const QString &serverPort, const bool& isActive)
 {
     QHostAddress address(serverAddress);
     if(address.isNull()) {
@@ -116,12 +116,19 @@ void ClientModel::connectToServer(const bool &saveInformation, const QString &se
         m_settingsManager.setSavedConnection(saveInformation, serverAddress, serverPort);
     }
 
-    m_networkManager.connectToServer(serverAddress, serverPort);
+    m_networkManager.connectToServer(serverAddress, serverPort, isActive);
 }
 
 void ClientModel::disconnectButton()
 {
     m_networkManager.disconnect();
+    // copiedServerFiles = false;
+}
+
+
+// handle data from Server
+void ClientModel::parseJsonRecd(const QByteArray &jsonArray)
+{
 
 }
 

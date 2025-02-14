@@ -30,6 +30,9 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         file_handler.h file_handler.cpp
         data_converter.h data_converter.cpp
         network_manager.h network_manager.cpp
+        request_manager.h request_manager.cpp
+        tcpclient_thread.h tcpclient_thread.cpp
+        tcpserver_thread.h tcpserver_thread.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET MyFTPClient APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
