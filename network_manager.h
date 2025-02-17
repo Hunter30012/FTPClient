@@ -2,12 +2,10 @@
 #define NETWORK_MANAGER_H
 
 #include <QObject>
-#include <QTcpSocket>
 #include <QAbstractSocket>
-#include <QColor>
-#include <QMetaEnum>
-#include "tcpclient_thread.h"
-#include "tcpserver_thread.h"
+#include "active_data_thread.h"
+#include "command_thread.h"
+#include "passive_data_thread.h"
 
 class NetworkManager : public QObject
 {
@@ -21,16 +19,11 @@ signals:
     void writeTextSignal(QString text, QColor color = {});
     void parseJsonRecdSignal(const QByteArray& jsonArray);
 
-public slots:
-    void connectToServer(const QString& serverAddress, const QString& serverPort, const bool& isActive);
-    void disconnect();
+    void stopServerSignal();
 
-    // TCP Socket
-    void connected();
-    void disconnected();
-    void readyRead();
-    void stateChanged(QAbstractSocket::SocketState socketState);
-    void errorOccured(QAbstractSocket::SocketError socketError);
+public slots:
+    void connectToServer(const QHostAddress &serverAddress, int serverPort, const bool& isActive);
+    void stopConnectingToServer();
 
     void witeData(const QByteArray& data);
     // QByteArray readAll();
@@ -41,15 +34,16 @@ public slots:
     // void uploadFileData();
 
 private:
-    TcpClientThread m_commandThread;
-
-    TcpServerThread m_activeDataThread;
-    TcpClientThread m_passiveDataThread;
 
     bool m_isDownloading;
     bool m_isUploading;
 
     QByteArray dataToSend;
+
+    CommandThread m_commandThread;
+
+    PassiveDataThread m_passiveDataThread;
+    ActiveDataThread m_activeDataThread;
 };
 
 #endif // NETWORK_MANAGER_H

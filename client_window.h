@@ -39,7 +39,8 @@ public slots:
 
     // connect to Server
     void connectToServer();
-
+    void enableStop();
+    void disableStop();
 private:
 
     QString m_currentLocalPath;

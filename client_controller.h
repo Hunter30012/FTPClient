@@ -16,8 +16,6 @@ public:
 
     int init();
 
-
-
 private:
     void connectWindowSignalSlots(QList<bool>& connectionResults);
     void connectModelSignalSlots(QList<bool>& connectionResults);

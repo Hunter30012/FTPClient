@@ -104,6 +104,7 @@ void ClientModel::deleteHandle(QModelIndexList &listIndex, bool deleteInServer)
 void ClientModel::connectToServer(const bool &saveInformation, const QString &serverAddress, const QString &serverPort, const bool& isActive)
 {
     QHostAddress address(serverAddress);
+    int port;
     if(address.isNull()) {
         emit writeTextSignal("Please enter a valid IP address!", Qt::red);
         return;
@@ -112,16 +113,17 @@ void ClientModel::connectToServer(const bool &saveInformation, const QString &se
         emit writeTextSignal("Please enter a valid Port number!", Qt::red);
         return;
     }
+
     if(saveInformation) {
         m_settingsManager.setSavedConnection(saveInformation, serverAddress, serverPort);
     }
-
-    m_networkManager.connectToServer(serverAddress, serverPort, isActive);
+    port = serverPort.toInt();
+    m_networkManager.connectToServer(address, port, isActive);
 }
 
 void ClientModel::disconnectButton()
 {
-    m_networkManager.disconnect();
+    m_networkManager.stopConnectingToServer();
     // copiedServerFiles = false;
 }
 

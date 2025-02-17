@@ -63,6 +63,10 @@ void ClientController::connectModelSignalSlots(QList<bool> &connectionResults)
 
     // Network
     connectionResults.append(connect(&m_model.m_networkManager, &NetworkManager::writeTextSignal, &m_window, &ClientWindow::writeTextToOutput));
+    connectionResults.append(connect(&m_model.m_networkManager.m_commandThread, &CommandThread::enableStopSignal, &m_window, &ClientWindow::enableStop));
+    connectionResults.append(connect(&m_model.m_networkManager.m_commandThread, &CommandThread::disableStopSignal, &m_window, &ClientWindow::disableStop));
+
+    connectionResults.append(connect(&m_model.m_networkManager.m_commandThread, &CommandThread::writeTextSignal, &m_window, &ClientWindow::writeTextToOutput));
 
     connectionResults.append(connect(&m_model.m_networkManager, &NetworkManager::parseJsonRecdSignal, &m_model, &ClientModel::parseJsonRecd));
 }

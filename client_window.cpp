@@ -102,3 +102,13 @@ void ClientWindow::connectToServer()
     emit connectToServerSignal(ui->checkBox->isChecked(), ui->addressEdit->text(), ui->portEdit->text(), isActive);
 }
 
+void ClientWindow::enableStop()
+{
+    ui->disconnectButton->setDisabled(false);
+}
+
+void ClientWindow::disableStop()
+{
+    ui->disconnectButton->setDisabled(true);
+}
+
