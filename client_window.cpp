@@ -102,13 +102,26 @@ void ClientWindow::connectToServer()
     emit connectToServerSignal(ui->checkBox->isChecked(), ui->addressEdit->text(), ui->portEdit->text(), isActive);
 }
 
-void ClientWindow::enableStop()
+void ClientWindow::enableDisconnect()
 {
     ui->disconnectButton->setDisabled(false);
+    ui->connectButton->setDisabled(true);
 }
 
-void ClientWindow::disableStop()
+void ClientWindow::disableDisconnect()
 {
     ui->disconnectButton->setDisabled(true);
+    ui->connectButton->setDisabled(false);
+}
+
+void ClientWindow::connectedToServer(FileListServerModel *model, const QString &curDir)
+{
+    // TBD
+    ui->serverTableView->setModel(model);
+    ui->serverTableView->setColumnWidth(0, 5);
+    ui->serverTableView->setColumnWidth(1, 200);
+    ui->serverTableView->setColumnWidth(2, 60);
+    ui->serverTableView->setColumnWidth(3, 90);
+    ui->serverTableView->setColumnWidth(4, 190);
 }
 

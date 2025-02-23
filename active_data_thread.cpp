@@ -99,15 +99,17 @@ void ActiveDataThread::sendData(const QByteArray &data)
 void ActiveDataThread::onReadyRead()
 {
     if (m_socket) {
+        qDebug() << "onReadyRead in :" << QThread::currentThread();
         QByteArray data = m_socket->readAll();
-        qDebug() << "ActiveData received: " << data;
-        sendData("ActiveData response: " + data);  // Response to Client
+        // qDebug() << "ActiveData received: " << data;
+        // sendData("ActiveData response: " + data);  // Response to Client
+        emit dataReceivedSignal(data);
     }
 }
 
 void ActiveDataThread::stopListening()
 {
-    qDebug() << "Stop Listening in ActiveDataThread";
+    qDebug() << "Stop Listening in ActiveDataThread: " << QThread::currentThread();
     if (m_server) {
         m_server->close();
     }

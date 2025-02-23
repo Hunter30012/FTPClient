@@ -7,7 +7,6 @@
 #include <QTcpSocket>
 #include <QColor>
 #include <QNetworkInterface>
-#include <QCoreApplication>
 
 class ActiveDataThread : public QObject
 {

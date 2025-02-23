@@ -28,9 +28,6 @@ void PassiveDataThread::startThread()
         this->moveToThread(&m_thread);
         connect(&m_thread, &QThread::started, this, &PassiveDataThread::onStarted);
         m_thread.start();
-        while (!m_thread.isRunning()) {
-            QCoreApplication::processEvents();
-        }
     }
 }
 

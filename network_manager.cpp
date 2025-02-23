@@ -37,11 +37,11 @@ void NetworkManager::connectToServer(const QHostAddress &serverAddress, int serv
 
 void NetworkManager::stopConnectingToServer()
 {
-    emit stopServerSignal();
+    emit stopClientSignal();
 }
 
 void NetworkManager::witeData(const QByteArray &data)
 {
-    // m_tcpSocket.write(data);
+
 }
 

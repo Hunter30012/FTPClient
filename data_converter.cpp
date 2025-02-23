@@ -23,8 +23,8 @@ QByteArray DataConverter::JsonObjectToByteArray(const QJsonObject& json)
 }
 
 QPixmap DataConverter::decodePixmapFromString(const QString& icon) {
-    auto const encoded = icon.toLatin1();
+    QByteArray byteArray = icon.toLatin1();
     QPixmap p;
-    p.loadFromData(QByteArray::fromBase64(encoded), "PNG");
+    p.loadFromData(byteArray, "PNG");
     return p;
 }

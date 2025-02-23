@@ -6,54 +6,30 @@
 #include <QJsonObject>
 #include <QJsonArray>
 
-
 class RequestManager
 {
 public:
     enum class RequestType
     {
-        Browse,
-        Remove,
-        Rename,
-        CreateFolder,
-        UploadFile,
-        UploadCompleted,
+        ActiveConnect = 0,
+        PassiveConnect,
+        ChangeDir,
+        Delete,
         DownloadFile,
-        DownloadFolder,
-        NextPendingDownload,
+        UploadFile,
     };
 
     enum class ResponseType
     {
-        UnknownResponse = -1,
-        Unauthorized = 0,
-        Connected = 1,
-        Closing = 2,
-        FolderCreated = 3,
-        FolderAlreadyExists = 4,
-        Browse = 5,
-        Rename = 6,
-        RenameError = 7,
-        DeletedFiles = 8,
-        FileAlreadyExists = 9,
-        BeginFileUpload = 10,
-        FileUploading = 11,
-        UploadCompleted = 12,
-        BeginFileDownload = 13,
-        DownloadComplete = 14,
-        DownloadFolder = 15,
-        DownloadFileError = 16,
+        ActiveConnected = 0,
+        PassiveConnectd,
+        ChangedDir,
+        Delete,
+        DownloadedFile,
+        UploadedFile,
     };
 
-    enum class FileOverwrite
-    {
-        NoneSelected,
-        OverwriteExisting,
-        CreateNewFileName,
-        SkipFile,
-    };
-
-    static QJsonObject createServerRequest(RequestManager::RequestType action, const QMap<QString, QString>& requestVariables, const QStringList& deleteFiles = {});
+    static QJsonObject createServerRequest(RequestManager::RequestType action, const QMap<QString, QString>& requestVariables);
     static bool checkIfDataIsJson(const QByteArray& data);
 private:
     RequestManager();

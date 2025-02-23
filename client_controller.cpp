@@ -34,14 +34,12 @@ void ClientController::connectWindowSignalSlots(QList<bool> &connectionResults)
     // doubleClick
     connectionResults.append(connect(m_window.ui->localFSTableView, &QTableView::doubleClicked, &m_model, &ClientModel::openSelectedDir));
 
-
     /*
      * Connect to Server
      */
     connectionResults.append(connect(m_window.ui->connectButton, &QPushButton::clicked, &m_window, &ClientWindow::connectToServer));
     connectionResults.append(connect(&m_window, &ClientWindow::connectToServerSignal, &m_model, &ClientModel::connectToServer));
     connectionResults.append(connect(m_window.ui->disconnectButton, &QPushButton::clicked, &m_model, &ClientModel::disconnectButton));
-
 
     /*
      * Other functions
@@ -63,10 +61,14 @@ void ClientController::connectModelSignalSlots(QList<bool> &connectionResults)
 
     // Network
     connectionResults.append(connect(&m_model.m_networkManager, &NetworkManager::writeTextSignal, &m_window, &ClientWindow::writeTextToOutput));
-    connectionResults.append(connect(&m_model.m_networkManager.m_commandThread, &CommandThread::enableStopSignal, &m_window, &ClientWindow::enableStop));
-    connectionResults.append(connect(&m_model.m_networkManager.m_commandThread, &CommandThread::disableStopSignal, &m_window, &ClientWindow::disableStop));
+    connectionResults.append(connect(&m_model.m_networkManager, &NetworkManager::stopClientSignal, &m_model.m_networkManager.m_commandThread, &CommandThread::stopConnection));
+    connectionResults.append(connect(&m_model.m_networkManager.m_commandThread, &CommandThread::enableDisconnectSignal, &m_window, &ClientWindow::enableDisconnect));
+    connectionResults.append(connect(&m_model.m_networkManager.m_commandThread, &CommandThread::disableDisconnectSignal, &m_window, &ClientWindow::disableDisconnect));
 
     connectionResults.append(connect(&m_model.m_networkManager.m_commandThread, &CommandThread::writeTextSignal, &m_window, &ClientWindow::writeTextToOutput));
+    // connectionResults.append(connect(&m_model.m_networkManager, &NetworkManager::parseJsonRecdSignal, &m_model, &ClientModel::parseJsonRecd));
+    connectionResults.append(connect(&m_model.m_networkManager.m_activeDataThread, &ActiveDataThread::dataReceivedSignal, &m_model, &ClientModel::parseJsonRecd));
+    // connected
+    connectionResults.append(connect(&m_model, &ClientModel::connectedToServerSignal, &m_window, &ClientWindow::connectedToServer));
 
-    connectionResults.append(connect(&m_model.m_networkManager, &NetworkManager::parseJsonRecdSignal, &m_model, &ClientModel::parseJsonRecd));
 }

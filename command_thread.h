@@ -5,6 +5,9 @@
 #include <QTcpSocket>
 #include <QThread>
 #include <QColor>
+#include <QNetworkInterface>
+#include "request_manager.h"
+#include "data_converter.h"
 
 class CommandThread : public QObject
 {
@@ -31,8 +34,8 @@ signals:
     void stopPassiveDataSignal();
 
     // Control Button
-    void enableStopSignal();
-    void disableStopSignal();
+    void enableDisconnectSignal();
+    void disableDisconnectSignal();
 
 public slots:
     void startThread(const QHostAddress& address, int port, bool isActiveMode);

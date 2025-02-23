@@ -34,6 +34,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         command_thread.h command_thread.cpp
         active_data_thread.h active_data_thread.cpp
         passive_data_thread.h passive_data_thread.cpp
+        file.h
+        file_list_server_model.h file_list_server_model.cpp
 
 
     )

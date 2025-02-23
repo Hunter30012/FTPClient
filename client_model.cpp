@@ -58,7 +58,7 @@ void ClientModel::openFolder(const QString &dir, bool searchInServer)
 void ClientModel::openSelectedDir(const QModelIndex &index)
 {
     qDebug() << "Selected in Local: Clicked on row: " << index.row() << " on colum: " << index.column();
-
+    // TBD
     QModelIndex selectedIndex = m_localFileSystem->index(index.row(), 0, index.parent());
     bool isDir = m_localFileSystem->isDir(selectedIndex);
     if(isDir) {
@@ -129,9 +129,26 @@ void ClientModel::disconnectButton()
 
 
 // handle data from Server
-void ClientModel::parseJsonRecd(const QByteArray &jsonArray)
+void ClientModel::parseJsonRecd(const QByteArray &data)
 {
+    bool isJson = RequestManager::checkIfDataIsJson(data);
+    if (!isJson) {
+        emit writeTextSignal("Response from Server - Invalid Json format!", Qt::red);
+        return;
+    }
+    QJsonParseError jsonError;
+    QJsonArray jsonArray = QJsonDocument::fromJson(data, &jsonError).array();
+    QJsonObject serverDetails = jsonArray.first().toObject();
 
+    m_currentServerDir = serverDetails.value("directory").toString();
+    qDebug() << "Server Dir: " << m_currentServerDir;
+    emit writeTextSignal("Server Dir: " + m_currentServerDir, Qt::darkBlue);
+
+    // Test connected
+    m_serverFileList.clear();
+    m_serverFileList = FileHandler::getFileListFromJson(jsonArray);
+    m_serverFileSystem = new FileListServerModel(m_serverFileList, this);
+    emit connectedToServerSignal(m_serverFileSystem, m_currentServerDir);
 }
 
 // Private method

@@ -6,6 +6,7 @@
 #include <QFileSystemModel>
 #include <QFileDialog>
 #include <QMessageBox>
+#include "file_list_server_model.h"
 
 #include "./ui_mainwindow.h"
 
@@ -39,8 +40,11 @@ public slots:
 
     // connect to Server
     void connectToServer();
-    void enableStop();
-    void disableStop();
+    void enableDisconnect();
+    void disableDisconnect();
+
+    // connected
+    void connectedToServer(FileListServerModel *model, const QString& curDir);
 private:
 
     QString m_currentLocalPath;

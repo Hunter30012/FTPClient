@@ -17,9 +17,8 @@ public:
 
 signals:
     void writeTextSignal(QString text, QColor color = {});
-    void parseJsonRecdSignal(const QByteArray& jsonArray);
 
-    void stopServerSignal();
+    void stopClientSignal();
 
 public slots:
     void connectToServer(const QHostAddress &serverAddress, int serverPort, const bool& isActive);

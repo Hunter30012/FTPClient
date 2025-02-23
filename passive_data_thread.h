@@ -5,7 +5,6 @@
 #include <QTcpSocket>
 #include <QThread>
 #include <QColor>
-#include <QCoreApplication>
 
 class PassiveDataThread : public QObject
 {

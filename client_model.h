@@ -8,6 +8,8 @@
 #include "settings_manager.h"
 #include "file_handler.h"
 #include "network_manager.h"
+#include "file_list_server_model.h"
+#include "request_manager.h"
 
 class ClientModel : public QObject
 {
@@ -25,6 +27,8 @@ signals:
                           const QString& serverAddress,
                           const QString& serverPort);
 
+    void connectedToServerSignal(FileListServerModel *model, const QString& curDir);
+
 private slots:
     // Local Interaction
     void browseHomeLocal();
@@ -39,7 +43,7 @@ private slots:
     void disconnectButton();
 
     // handle data from Server
-    void parseJsonRecd(const QByteArray& jsonArray);
+    void parseJsonRecd(const QByteArray& data);
 
 private:
     void setFileSystem(QString pathDir);
@@ -47,10 +51,12 @@ private:
     NetworkManager m_networkManager;
     SettingsManager m_settingsManager;
 
-    QString pathFileUploading;
+    QString m_pathFileUploading;
     QString m_currentLocalDir;
-    QString currentServerDir;
+    QString m_currentServerDir;
 
+    QList<File> m_serverFileList;
+    FileListServerModel* m_serverFileSystem;
     QFileSystemModel* m_localFileSystem;
 };
 
