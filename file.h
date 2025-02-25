@@ -7,8 +7,8 @@ class File
 {
 
 public:
-    File(QString fileName, QString filePath, quint64 fileSize = 0, bool isDir = false, QString lastModified = {}, QPixmap icon = {}, QString localDirectorySnapshot = {}, QString serverDirectorySnapshot = {})
-        : m_fileName{ fileName }, m_filePath{ filePath }, m_fileSize{ fileSize }, m_isDir{ isDir }, m_lastModified{ lastModified }, m_icon{ icon }
+    File(QString fileName, QString filePath, quint64 fileSize = 0, bool isDir = false, QString lastModified = {}, QPixmap icon = {}, QString fileType = {})
+        : m_fileName{ fileName }, m_filePath{ filePath }, m_fileSize{ fileSize }, m_isDir{ isDir }, m_lastModified{ lastModified }, m_icon{ icon }, m_fileType { fileType }
     {};
 
     File() {};
@@ -18,6 +18,7 @@ public:
         return m_fileName.isEmpty();
     }
 
+    QString m_fileType;
     QString m_fileName;
     QString m_filePath;
     QString m_lastModified;

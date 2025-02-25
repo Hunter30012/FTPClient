@@ -18,7 +18,11 @@ QString FileHandler::getPreviousFolderPath(QString fullpath)
         // is current path  -> cut /.
         fullpath = fullpath.left(fullpath.lastIndexOf("/"));
     }
-    return fullpath.left(fullpath.lastIndexOf("/"));
+    QString parentPath = fullpath.left(fullpath.lastIndexOf("/"));
+    if (parentPath.endsWith(":")) {
+        parentPath += "/";
+    }
+    return parentPath;
 }
 
 bool FileHandler::checkFileExists(const QString &filePath, const QString &fileName)
@@ -52,7 +56,8 @@ QList<File> FileHandler::getFileListFromJson(const QJsonArray &jsonArray)
                 json.value("fileSize").toString().toULongLong(),
                 json.value("isDir").toBool(),
                 json.value("lastModified").toString(),
-                DataConverter::decodePixmapFromString(json.value("icon").toString())
+                DataConverter::decodePixmapFromString(json.value("icon").toString()),
+                json.value("fileType").toString(),
             }
         );
     }

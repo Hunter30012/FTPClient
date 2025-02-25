@@ -5,7 +5,7 @@ CommandThread::CommandThread(QObject *parent)
 {
     this->moveToThread(&m_thread);
     connect(&m_thread, &QThread::started, this, &CommandThread::onStarted);
-    connect(this, &CommandThread::sendDataSignal, this, &CommandThread::sendData);
+    // connect(this, &CommandThread::sendDataSignal, this, &CommandThread::sendData);
 }
 
 CommandThread::~CommandThread()
@@ -101,11 +101,13 @@ void CommandThread::connected()
         };
         QJsonObject request = RequestManager::createServerRequest(RequestManager::RequestType::ActiveConnect, requestVariables);
         QByteArray requestData = DataConverter::JsonObjectToByteArray(request);
-        sendData(requestData);
+        this->sendData(requestData);
     } else {
         qDebug() << "Send Passive Mode command";
-        QHostAddress addr_test("169.254.198.94");
-        emit restartPassiveDataThreadSignal(addr_test, m_serverPort + 1);
+        QJsonObject request = RequestManager::createServerRequest(RequestManager::RequestType::PassiveConnect);
+        QByteArray requestData = DataConverter::JsonObjectToByteArray(request);
+        this->sendData(requestData);
+        emit restartPassiveDataThreadSignal(m_serverIp, m_serverPort + 1);
     }
 }
 
@@ -135,6 +137,7 @@ void CommandThread::sendData(const QByteArray &data)
 {
     if (m_socket && m_socket->state() == QAbstractSocket::ConnectedState) {
         m_socket->write(data);
+        m_socket->flush();
     } else {
         qWarning() << "Cannot send data, no active connection!";
     }
@@ -171,4 +174,9 @@ void CommandThread::onError(QAbstractSocket::SocketError socketError)
 {
     qDebug() << "Error:" << socketError << " " << m_socket->errorString();
     emit writeTextSignal(m_socket->errorString(), Qt::darkRed);
+}
+
+void CommandThread::parseResponse(const QByteArray &requestData)
+{
+
 }

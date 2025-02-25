@@ -19,7 +19,7 @@ public:
 signals:
     void writeTextSignal(QString text, QColor color = {});
 
-    void sendDataSignal(const QByteArray& data);
+    // void sendDataSignal(const QByteArray& data);
     void disconnectedSignal();
     void dataReceivedSignal(const QByteArray &data);
 
@@ -49,6 +49,7 @@ private slots:
     void onStarted();
     void onReadyRead();
     void onError(QAbstractSocket::SocketError socketError);
+    void parseResponse(const QByteArray &requestData);
 
 private:
     bool m_isActiveMode;

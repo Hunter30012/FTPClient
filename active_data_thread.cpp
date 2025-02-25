@@ -91,6 +91,7 @@ void ActiveDataThread::sendData(const QByteArray &data)
 {
     if (m_socket && m_socket->state() == QAbstractSocket::ConnectedState) {
         m_socket->write(data);
+        m_socket->flush();
     } else {
         qWarning() << "No active connection to write data.";
     }

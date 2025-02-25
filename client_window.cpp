@@ -10,10 +10,6 @@ ClientWindow::ClientWindow(QWidget *parent)
     ui->serverDeleteButton->setDisabled(true);
     ui->serverUploadButton->setDisabled(true);
     ui->serverReturnButton->setDisabled(true);
-    ui->serverSearchButton->setDisabled(true);
-    ui->serverSearchEdit->setDisabled(true);
-    ui->serverHomeButton->setDisabled(true);
-
     ui->disconnectButton->setDisabled(true);
     ui->localUploadButton->setDisabled(true);
 }
@@ -77,7 +73,23 @@ void ClientWindow::deleteInLocal()
 
     // Need to hanle when this file is transfering
     if(ret == QMessageBox::Yes) {
-        emit deleteSignal(selectedRows, false);
+        emit deleteInLocalSignal(selectedRows);
+    }
+}
+
+void ClientWindow::deleteInServer()
+{
+    QModelIndexList selectedRows = ui->serverTableView->selectionModel()->selectedRows();
+    if(selectedRows.isEmpty()) {
+        writeTextToOutput("No files in Server are selected", Qt::red);
+        return;
+    }
+
+    QMessageBox::StandardButton ret = QMessageBox::question(this, "FTP Server", "Do you want to delete?",
+                                                            QMessageBox::Yes | QMessageBox::No);
+
+    if(ret == QMessageBox::Yes) {
+        emit deleteInServerSignal(selectedRows);
     }
 }
 
@@ -106,12 +118,21 @@ void ClientWindow::enableDisconnect()
 {
     ui->disconnectButton->setDisabled(false);
     ui->connectButton->setDisabled(true);
+    ui->serverDeleteButton->setDisabled(false);
+    ui->serverUploadButton->setDisabled(false);
+    ui->serverReturnButton->setDisabled(false);
+    ui->localUploadButton->setDisabled(false);
 }
 
 void ClientWindow::disableDisconnect()
 {
+    ui->serverTableView->setModel(nullptr);
     ui->disconnectButton->setDisabled(true);
     ui->connectButton->setDisabled(false);
+    ui->serverDeleteButton->setDisabled(true);
+    ui->serverUploadButton->setDisabled(true);
+    ui->serverReturnButton->setDisabled(true);
+    ui->localUploadButton->setDisabled(true);
 }
 
 void ClientWindow::connectedToServer(FileListServerModel *model, const QString &curDir)
@@ -122,6 +143,7 @@ void ClientWindow::connectedToServer(FileListServerModel *model, const QString &
     ui->serverTableView->setColumnWidth(1, 200);
     ui->serverTableView->setColumnWidth(2, 60);
     ui->serverTableView->setColumnWidth(3, 90);
-    ui->serverTableView->setColumnWidth(4, 190);
+    ui->serverTableView->setColumnWidth(4, 150);
+    ui->serverTableView->setColumnWidth(5, 200);
 }
 

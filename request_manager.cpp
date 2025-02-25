@@ -3,7 +3,8 @@
 RequestManager::RequestManager() {}
 
 QJsonObject RequestManager::createServerRequest(RequestManager::RequestType action,
-                                                const QMap<QString, QString>& requestVariables)
+                                                const QMap<QString, QString>& requestVariables,
+                                                const QStringList& deleteFiles)
 {
     QJsonObject request;
     request["request_type"] = static_cast<int>(action);
@@ -11,7 +12,13 @@ QJsonObject RequestManager::createServerRequest(RequestManager::RequestType acti
     for (auto it = requestVariables.begin(); it != requestVariables.end(); ++it) {
         request[it.key()] = it.value();
     }
-
+    if (!deleteFiles.isEmpty()) {
+        QJsonArray fileArray;
+        for (const QString& file : deleteFiles) {
+            fileArray.append(file);
+        }
+        request["filesDelete"] = fileArray;
+    }
     return request;
 }
 

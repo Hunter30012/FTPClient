@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QFileSystemModel>
 #include <QCoreApplication>
+#include <QStringList>
 
 #include "settings_manager.h"
 #include "file_handler.h"
@@ -28,6 +29,7 @@ signals:
                           const QString& serverPort);
 
     void connectedToServerSignal(FileListServerModel *model, const QString& curDir);
+    void sendCommandDataSignal(const QByteArray& data);
 
 private slots:
     // Local Interaction
@@ -36,7 +38,10 @@ private slots:
     void openFolder(const QString& dir, bool searchInServer);
     void openSelectedDir(const QModelIndex& index);
 
-    void deleteHandle(QModelIndexList& listIndex, bool deleteInServer);
+    void deleteInLocal(QModelIndexList& listIndex);
+    // Server Interaction
+    void returnPreviousFolderServer();
+    void deleteInServer(QModelIndexList& listIndex);
 
     // connect to Server
     void connectToServer(const bool& saveInformation, const QString& serverAddress, const QString& serverPort, const bool& isActive);
@@ -50,6 +55,7 @@ private:
 
     NetworkManager m_networkManager;
     SettingsManager m_settingsManager;
+    bool m_isActiveMode;
 
     QString m_pathFileUploading;
     QString m_currentLocalDir;

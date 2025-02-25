@@ -22,14 +22,17 @@ public:
     enum class ResponseType
     {
         ActiveConnected = 0,
-        PassiveConnectd,
+        PassiveConnected,
         ChangedDir,
-        Delete,
+        Deleted,
+        UnDeleted,
         DownloadedFile,
+        DownloadingFile,
         UploadedFile,
+        UploadingFile,
     };
 
-    static QJsonObject createServerRequest(RequestManager::RequestType action, const QMap<QString, QString>& requestVariables);
+    static QJsonObject createServerRequest(RequestManager::RequestType action, const QMap<QString, QString>& requestVariables = {}, const QStringList& deleteFiles ={});
     static bool checkIfDataIsJson(const QByteArray& data);
 private:
     RequestManager();

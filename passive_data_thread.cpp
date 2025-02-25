@@ -43,16 +43,16 @@ void PassiveDataThread::restartConnection(const QHostAddress &serverIp, int port
     m_serverPort = port;
 
     m_socket = new QTcpSocket();
+    connect(m_socket, &QTcpSocket::connected, this, &PassiveDataThread::connected);
+    connect(m_socket, &QTcpSocket::readyRead, this, &PassiveDataThread::onReadyRead);
+    connect(m_socket, &QTcpSocket::errorOccurred, this, &PassiveDataThread::onError);
     qDebug() << "restartConnection: " << QThread::currentThread();
     qInfo() << "Trying to connect to " << m_serverIp.toString() << ":" << m_serverPort;
     m_socket->connectToHost(m_serverIp, m_serverPort);
 
-    if (!m_socket->waitForConnected(5000)) {
+    if (!m_socket->waitForConnected(30000)) {
         qWarning() << "Connection failed!";
     }
-    connect(m_socket, &QTcpSocket::connected, this, &PassiveDataThread::connected);
-    connect(m_socket, &QTcpSocket::readyRead, this, &PassiveDataThread::onReadyRead);
-    connect(m_socket, &QTcpSocket::errorOccurred, this, &PassiveDataThread::onError);
 }
 
 void PassiveDataThread::stopConnection()
@@ -83,7 +83,7 @@ void PassiveDataThread::onReadyRead()
 {
     qDebug() << "onReadyRead: " << QThread::currentThread();
     QByteArray data = m_socket->readAll();
-    qDebug() << "Received from Server: " << data;
+    // qDebug() << "Received from Server: " << data;
     // handle Data
     emit dataReceivedSignal(data);
 }

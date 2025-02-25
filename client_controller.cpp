@@ -30,10 +30,16 @@ void ClientController::connectWindowSignalSlots(QList<bool> &connectionResults)
     connectionResults.append(connect(&m_window, &ClientWindow::openFolderSignal, &m_model, &ClientModel::openFolder));
     connectionResults.append(connect(m_window.ui->localSearchButton, &QPushButton::clicked, &m_window, &ClientWindow::localSearch));
     connectionResults.append(connect(m_window.ui->localDeleteButton, &QPushButton::clicked, &m_window, &ClientWindow::deleteInLocal));
-    connectionResults.append(connect(&m_window, &ClientWindow::deleteSignal, &m_model, &ClientModel::deleteHandle));
+    connectionResults.append(connect(&m_window, &ClientWindow::deleteInLocalSignal, &m_model, &ClientModel::deleteInLocal));
     // doubleClick
     connectionResults.append(connect(m_window.ui->localFSTableView, &QTableView::doubleClicked, &m_model, &ClientModel::openSelectedDir));
 
+    /*
+     * Server File System Function
+     */
+    connectionResults.append(connect(m_window.ui->serverReturnButton, &QPushButton::clicked, &m_model, &ClientModel::returnPreviousFolderServer));
+    connectionResults.append(connect(m_window.ui->serverDeleteButton, &QPushButton::clicked, &m_window, &ClientWindow::deleteInServer));
+    connectionResults.append(connect(&m_window, &ClientWindow::deleteInServerSignal, &m_model, &ClientModel::deleteInServer));
     /*
      * Connect to Server
      */
@@ -60,15 +66,16 @@ void ClientController::connectModelSignalSlots(QList<bool> &connectionResults)
     connectionResults.append(connect(&m_model, &ClientModel::setLocalFileSystemSignal, &m_window, &ClientWindow::setLocalFileSystem));
 
     // Network
+    connectionResults.append(connect(&m_model.m_networkManager.m_commandThread, &CommandThread::writeTextSignal, &m_window, &ClientWindow::writeTextToOutput));
     connectionResults.append(connect(&m_model.m_networkManager, &NetworkManager::writeTextSignal, &m_window, &ClientWindow::writeTextToOutput));
     connectionResults.append(connect(&m_model.m_networkManager, &NetworkManager::stopClientSignal, &m_model.m_networkManager.m_commandThread, &CommandThread::stopConnection));
     connectionResults.append(connect(&m_model.m_networkManager.m_commandThread, &CommandThread::enableDisconnectSignal, &m_window, &ClientWindow::enableDisconnect));
     connectionResults.append(connect(&m_model.m_networkManager.m_commandThread, &CommandThread::disableDisconnectSignal, &m_window, &ClientWindow::disableDisconnect));
 
-    connectionResults.append(connect(&m_model.m_networkManager.m_commandThread, &CommandThread::writeTextSignal, &m_window, &ClientWindow::writeTextToOutput));
-    // connectionResults.append(connect(&m_model.m_networkManager, &NetworkManager::parseJsonRecdSignal, &m_model, &ClientModel::parseJsonRecd));
+    // parse Data to display
     connectionResults.append(connect(&m_model.m_networkManager.m_activeDataThread, &ActiveDataThread::dataReceivedSignal, &m_model, &ClientModel::parseJsonRecd));
+    connectionResults.append(connect(&m_model.m_networkManager.m_passiveDataThread, &PassiveDataThread::dataReceivedSignal, &m_model, &ClientModel::parseJsonRecd));
     // connected
     connectionResults.append(connect(&m_model, &ClientModel::connectedToServerSignal, &m_window, &ClientWindow::connectedToServer));
-
+    connectionResults.append(connect(&m_model, &ClientModel::sendCommandDataSignal, &m_model.m_networkManager.m_commandThread, &CommandThread::sendData));
 }
