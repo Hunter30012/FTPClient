@@ -13,6 +13,11 @@ NetworkManager::NetworkManager(QObject *parent)
     connect(&m_commandThread, &CommandThread::restartPassiveDataThreadSignal, &m_passiveDataThread, &PassiveDataThread::restartConnection, Qt::QueuedConnection);
 }
 
+NetworkManager::~NetworkManager()
+{
+    m_saveFile.commit();
+}
+
 bool NetworkManager::isValidPort(const QString &port)
 {
     if (port.isEmpty()) {
@@ -40,8 +45,96 @@ void NetworkManager::stopConnectingToServer()
     emit stopClientSignal();
 }
 
-void NetworkManager::witeData(const QByteArray &data)
+void NetworkManager::onDownloadedFile(const QJsonObject &obj)
 {
+    QString localPath = obj["localPath"].toString();
+    QString filePathServer = obj["filePathServer"].toString();
+    bool isDir = obj["isDir"].toBool();
 
+    QString fileName = QFileInfo(filePathServer).fileName();
+    QString localSavePath = localPath + "/" + fileName;
+
+    if (!m_saveFile.isOpen()) {
+        if (FileHandler::checkFileExists(localPath, fileName)) {
+            fileName = FileHandler::changeFileName(fileName, localPath);
+            localSavePath = localPath + "/" + fileName;
+        }
+    }
+
+    qDebug() << "savePath: " << localSavePath;
+
+    if (isDir) {
+        QDir().mkpath(localSavePath);
+        emit writeTextSignal("Created folder: " + localSavePath, Qt::darkGreen);
+
+        QJsonArray fileList = obj["fileList"].toArray();
+        QStringList downloadPaths;
+        for(int i = 0; i < fileList.count(); i++) {
+            downloadPaths.append(fileList[i].toString());
+        }
+        QJsonObject request = RequestManager::createDownloadRequest(localSavePath, downloadPaths);
+        qDebug() << "Request Download: " << request;
+        QByteArray data = DataConverter::JsonObjectToByteArray(request);
+        m_commandThread.sendData(data);
+        return;
+    }
+
+    // File
+    quint64 sizeFile = obj["sizeFile"].toString().toULongLong();
+    QByteArray dataPacket = QByteArray::fromBase64(obj["dataPacket"].toString().toLatin1());
+    // small file
+    if(sizeFile < packetSize) {
+        m_saveFile.setFileName(localSavePath);
+        bool ret = m_saveFile.open(QIODevice::WriteOnly);
+        if(!ret) {
+            emit writeTextSignal("Failed to save downloaded file: " + fileName, Qt::red);
+            return;
+        }
+        m_saveFile.write(dataPacket);
+        m_saveFile.commit();
+        emit writeTextSignal("Download file " + fileName + " successfully!", Qt::darkBlue);
+    } else {
+        // downloaded big file
+        m_saveFile.commit();
+        emit writeTextSignal("Download file " + fileName + " successfully!", Qt::darkBlue);
+    }
 }
+
+void NetworkManager::onDownloadingFile(const QJsonObject &obj)
+{
+    QString localPath = obj["localPath"].toString();
+    QString filePathServer = obj["filePathServer"].toString();
+
+    quint64 sizeFile = obj["sizeFile"].toString().toULongLong();
+    quint64 writtenBytes = obj["writtenBytes"].toString().toULongLong();
+    QByteArray dataPacket = QByteArray::fromBase64(obj["dataPacket"].toString().toLatin1());
+
+    QString fileName = QFileInfo(filePathServer).fileName();
+    QString localSavePath = localPath + "/" + fileName;
+
+    if (!m_saveFile.isOpen()) {
+        if (FileHandler::checkFileExists(localPath, fileName)) {
+            fileName = FileHandler::changeFileName(fileName, localPath);
+            localSavePath = localPath + "/" + fileName;
+        }
+        qDebug() << localSavePath;
+        m_saveFile.setFileName(localSavePath);
+        if (!m_saveFile.open(QIODevice::WriteOnly)) {
+            emit writeTextSignal("Failed to open file: " + fileName, Qt::red);
+            return;
+        }
+    }
+
+    m_saveFile.write(dataPacket);
+    emit writeTextSignal(QString("Received %1/%2 bytes for file: %3")
+                             .arg(writtenBytes).arg(sizeFile).arg(fileName),
+                         Qt::darkBlue);
+
+    // if (writtenBytes >= sizeFile) {
+    //     m_saveFile.commit();
+    //     emit writeTextSignal("Download completed: " + fileName, Qt::darkGreen);
+    // }
+}
+
+
 

@@ -22,10 +22,11 @@ public:
 
 signals:
     void openFolderSignal(const QString& dir, bool openInServer);
-    void deleteInLocalSignal(QModelIndexList& listIndex);
+    void deleteInLocalSignal(const QModelIndexList& listIndex);
     void connectToServerSignal(const bool& saveInformation, const QString& serverAddress, const QString& serverPort, const bool& isActive);
 
-    void deleteInServerSignal(QModelIndexList& listIndex);
+    void deleteInServerSignal(const QModelIndexList& listIndex);
+    void downloadFilesSignal(const QModelIndexList& listIndex);
 public slots:
     void writeTextToOutput(QString text, QColor color);
     void setLocalFileSystem(QFileSystemModel* model);
@@ -37,6 +38,7 @@ public slots:
     void deleteInLocal();
 
     void deleteInServer();
+    void downloadFiles();
 
     // clear
     void clearOutput();

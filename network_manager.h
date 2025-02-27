@@ -3,6 +3,11 @@
 
 #include <QObject>
 #include <QAbstractSocket>
+#include <QSaveFile>
+#include <QJsonObject>
+#include <QFileInfo>
+#include <QDir>
+#include "file_handler.h"
 #include "active_data_thread.h"
 #include "command_thread.h"
 #include "passive_data_thread.h"
@@ -13,6 +18,7 @@ class NetworkManager : public QObject
     friend class ClientController;
 public:
     explicit NetworkManager(QObject *parent = nullptr);
+    ~NetworkManager();
     static bool isValidPort(const QString& port);
 
 signals:
@@ -23,24 +29,16 @@ signals:
 public slots:
     void connectToServer(const QHostAddress &serverAddress, int serverPort, const bool& isActive);
     void stopConnectingToServer();
-
-    void witeData(const QByteArray& data);
-    // QByteArray readAll();
-
-    // QByteArray parseByteData();
-    // void parseByteDownload(const QByteArray& data);
-    //
-    // void uploadFileData();
-
+    void onDownloadedFile(const QJsonObject& obj);
+    void onDownloadingFile(const QJsonObject& obj);
 private:
-
+    const qint64 packetSize = 10000;
     bool m_isDownloading;
     bool m_isUploading;
 
+    QSaveFile m_saveFile;
     QByteArray dataToSend;
-
     CommandThread m_commandThread;
-
     PassiveDataThread m_passiveDataThread;
     ActiveDataThread m_activeDataThread;
 };

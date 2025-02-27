@@ -60,8 +60,8 @@ void ActiveDataThread::onNewConnection()
     }
 
     m_socket = m_server->nextPendingConnection();
-    connect(m_socket, &QTcpSocket::disconnected, this, &ActiveDataThread::disconnected);
-    connect(m_socket, &QTcpSocket::readyRead, this, &ActiveDataThread::onReadyRead);
+    connect(m_socket, &QTcpSocket::disconnected, this, &ActiveDataThread::disconnected, Qt::QueuedConnection);
+    connect(m_socket, &QTcpSocket::readyRead, this, &ActiveDataThread::onReadyRead, Qt::QueuedConnection);
     qInfo() << "Active Data Socket connected!" << QThread::currentThread();
 }
 

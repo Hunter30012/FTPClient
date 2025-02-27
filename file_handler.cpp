@@ -33,11 +33,18 @@ bool FileHandler::checkFileExists(const QString &filePath, const QString &fileNa
 QString FileHandler::changeFileName(const QString &fileName, const QString &filePath)
 {
     int fileNumToAppend = 0;
-    QString newFileName;
+    QString newFileName = fileName;
+    QFileInfo fileInfo(fileName);
+    QString baseName = fileInfo.completeBaseName(); // fileName without suffix
+    QString suffix = fileInfo.suffix(); // suffix
+
     do {
-        newFileName = fileName;
         ++fileNumToAppend;
-        newFileName = newFileName.insert(newFileName.indexOf("."), "_" + QString::number(fileNumToAppend));
+        if (!suffix.isEmpty()) {
+            newFileName = baseName + "_" + QString::number(fileNumToAppend) + "." + suffix;
+        } else {
+            newFileName = baseName + "_" + QString::number(fileNumToAppend);
+        }
     } while (checkFileExists(filePath, newFileName));
 
     return newFileName;

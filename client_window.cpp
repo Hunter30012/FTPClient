@@ -8,10 +8,10 @@ ClientWindow::ClientWindow(QWidget *parent)
     setWindowTitle("My FTP Client");
 
     ui->serverDeleteButton->setDisabled(true);
-    ui->serverUploadButton->setDisabled(true);
+    ui->downloadButton->setDisabled(true);
     ui->serverReturnButton->setDisabled(true);
     ui->disconnectButton->setDisabled(true);
-    ui->localUploadButton->setDisabled(true);
+    ui->uploadButton->setDisabled(true);
 }
 
 ClientWindow::~ClientWindow()
@@ -93,6 +93,16 @@ void ClientWindow::deleteInServer()
     }
 }
 
+void ClientWindow::downloadFiles()
+{
+    QModelIndexList selectedRows = ui->serverTableView->selectionModel()->selectedRows();
+    if(selectedRows.isEmpty()) {
+        writeTextToOutput("Please select files to download!", Qt::red);
+        return;
+    }
+    emit downloadFilesSignal(selectedRows);
+}
+
 void ClientWindow::clearOutput()
 {
     ui->textOutput->clear();
@@ -119,9 +129,9 @@ void ClientWindow::enableDisconnect()
     ui->disconnectButton->setDisabled(false);
     ui->connectButton->setDisabled(true);
     ui->serverDeleteButton->setDisabled(false);
-    ui->serverUploadButton->setDisabled(false);
+    ui->downloadButton->setDisabled(false);
     ui->serverReturnButton->setDisabled(false);
-    ui->localUploadButton->setDisabled(false);
+    ui->uploadButton->setDisabled(false);
 }
 
 void ClientWindow::disableDisconnect()
@@ -130,9 +140,9 @@ void ClientWindow::disableDisconnect()
     ui->disconnectButton->setDisabled(true);
     ui->connectButton->setDisabled(false);
     ui->serverDeleteButton->setDisabled(true);
-    ui->serverUploadButton->setDisabled(true);
+    ui->downloadButton->setDisabled(true);
     ui->serverReturnButton->setDisabled(true);
-    ui->localUploadButton->setDisabled(true);
+    ui->uploadButton->setDisabled(true);
 }
 
 void ClientWindow::connectedToServer(FileListServerModel *model, const QString &curDir)

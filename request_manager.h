@@ -33,6 +33,7 @@ public:
     };
 
     static QJsonObject createServerRequest(RequestManager::RequestType action, const QMap<QString, QString>& requestVariables = {}, const QStringList& deleteFiles ={});
+    static QJsonObject createDownloadRequest(const QString& localPath, const QStringList& serverFiles);
     static bool checkIfDataIsJson(const QByteArray& data);
 private:
     RequestManager();

@@ -22,6 +22,21 @@ QJsonObject RequestManager::createServerRequest(RequestManager::RequestType acti
     return request;
 }
 
+QJsonObject RequestManager::createDownloadRequest(const QString &localPath, const QStringList &serverFiles)
+{
+    QJsonObject request;
+    request["request_type"] = static_cast<int>(RequestManager::RequestType::DownloadFile);
+    request["localPath"] = localPath;
+
+    QJsonArray fileArray;
+    for (const QString &file : serverFiles) {
+        fileArray.append(file);
+    }
+    request["filePathServer"] = fileArray;
+
+    return request;
+}
+
 
 bool RequestManager::checkIfDataIsJson(const QByteArray& data)
 {

@@ -40,17 +40,15 @@ void ClientController::connectWindowSignalSlots(QList<bool> &connectionResults)
     connectionResults.append(connect(m_window.ui->serverReturnButton, &QPushButton::clicked, &m_model, &ClientModel::returnPreviousFolderServer));
     connectionResults.append(connect(m_window.ui->serverDeleteButton, &QPushButton::clicked, &m_window, &ClientWindow::deleteInServer));
     connectionResults.append(connect(&m_window, &ClientWindow::deleteInServerSignal, &m_model, &ClientModel::deleteInServer));
+    connectionResults.append(connect(m_window.ui->serverTableView, &QTableView::doubleClicked, &m_model, &ClientModel::openSelectedDirInServer));
+    connectionResults.append(connect(m_window.ui->downloadButton, &QPushButton::clicked, &m_window, &ClientWindow::downloadFiles));
+    connectionResults.append(connect(&m_window, &ClientWindow::downloadFilesSignal, &m_model, &ClientModel::downloadFiles));
     /*
      * Connect to Server
      */
     connectionResults.append(connect(m_window.ui->connectButton, &QPushButton::clicked, &m_window, &ClientWindow::connectToServer));
     connectionResults.append(connect(&m_window, &ClientWindow::connectToServerSignal, &m_model, &ClientModel::connectToServer));
     connectionResults.append(connect(m_window.ui->disconnectButton, &QPushButton::clicked, &m_model, &ClientModel::disconnectButton));
-
-    /*
-     * Other functions
-     */
-
 
     // clear Output log
     connectionResults.append(connect(m_window.ui->clearButton, &QPushButton::clicked, &m_window, &ClientWindow::clearOutput));
@@ -60,21 +58,24 @@ void ClientController::connectModelSignalSlots(QList<bool> &connectionResults)
 {
     // connect init ClientView: setup saved information
     connectionResults.append(connect(&m_model, &ClientModel::initClientWindowSignal, &m_window, &ClientWindow::initClientWindow));
-
     // Connect Data (model) to UI (window)
     connectionResults.append(connect(&m_model, &ClientModel::writeTextSignal, &m_window, &ClientWindow::writeTextToOutput));
     connectionResults.append(connect(&m_model, &ClientModel::setLocalFileSystemSignal, &m_window, &ClientWindow::setLocalFileSystem));
 
-    // Network
+    /**
+     * Network
+     */
     connectionResults.append(connect(&m_model.m_networkManager.m_commandThread, &CommandThread::writeTextSignal, &m_window, &ClientWindow::writeTextToOutput));
     connectionResults.append(connect(&m_model.m_networkManager, &NetworkManager::writeTextSignal, &m_window, &ClientWindow::writeTextToOutput));
     connectionResults.append(connect(&m_model.m_networkManager, &NetworkManager::stopClientSignal, &m_model.m_networkManager.m_commandThread, &CommandThread::stopConnection));
     connectionResults.append(connect(&m_model.m_networkManager.m_commandThread, &CommandThread::enableDisconnectSignal, &m_window, &ClientWindow::enableDisconnect));
     connectionResults.append(connect(&m_model.m_networkManager.m_commandThread, &CommandThread::disableDisconnectSignal, &m_window, &ClientWindow::disableDisconnect));
 
+    connectionResults.append(connect(&m_model, &ClientModel::downloadedFileSignal, &m_model.m_networkManager, &NetworkManager::onDownloadedFile));
+    connectionResults.append(connect(&m_model, &ClientModel::downloadingFileSignal, &m_model.m_networkManager, &NetworkManager::onDownloadingFile));
     // parse Data to display
-    connectionResults.append(connect(&m_model.m_networkManager.m_activeDataThread, &ActiveDataThread::dataReceivedSignal, &m_model, &ClientModel::parseJsonRecd));
-    connectionResults.append(connect(&m_model.m_networkManager.m_passiveDataThread, &PassiveDataThread::dataReceivedSignal, &m_model, &ClientModel::parseJsonRecd));
+    connectionResults.append(connect(&m_model.m_networkManager.m_activeDataThread, &ActiveDataThread::dataReceivedSignal, &m_model, &ClientModel::parseJsonRecd, Qt::QueuedConnection));
+    connectionResults.append(connect(&m_model.m_networkManager.m_passiveDataThread, &PassiveDataThread::dataReceivedSignal, &m_model, &ClientModel::parseJsonRecd, Qt::QueuedConnection));
     // connected
     connectionResults.append(connect(&m_model, &ClientModel::connectedToServerSignal, &m_window, &ClientWindow::connectedToServer));
     connectionResults.append(connect(&m_model, &ClientModel::sendCommandDataSignal, &m_model.m_networkManager.m_commandThread, &CommandThread::sendData));

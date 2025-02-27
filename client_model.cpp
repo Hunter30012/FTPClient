@@ -7,6 +7,7 @@ ClientModel::ClientModel(QWidget *parent)
     QCoreApplication::setApplicationName("FTP Client");
 
     // setup local FileSystem
+    m_serverFileSystem = nullptr;
     m_currentLocalDir = m_settingsManager.getDefaultDirectory();
     m_localFileSystem = new QFileSystemModel(this);
     m_localFileSystem->setFilter(QDir::NoDotAndDotDot | QDir::AllEntries);
@@ -28,14 +29,14 @@ void ClientModel::init()
 void ClientModel::browseHomeLocal()
 {
     qDebug() << "Click Home in Local";
-    setFileSystem("");
+    setLocalFileSystem("");
 }
 
 void ClientModel::returnPreviousFolderLocal()
 {
     qDebug() << "Click Return in Local";
     QString path = FileHandler::getPreviousFolderPath(m_currentLocalDir);
-    setFileSystem(path);
+    setLocalFileSystem(path);
 }
 
 void ClientModel::openFolder(const QString &dir, bool searchInServer)
@@ -47,7 +48,7 @@ void ClientModel::openFolder(const QString &dir, bool searchInServer)
         // open Folder in Local
         QDir pathDir(dir);
         if(pathDir.exists()) {
-            setFileSystem(dir);
+            setLocalFileSystem(dir);
             emit writeTextSignal("Open " + dir + " successfully.", Qt::blue);
         } else {
             emit writeTextSignal("Open " + dir + " unsuccessfully.", Qt::red);
@@ -58,19 +59,18 @@ void ClientModel::openFolder(const QString &dir, bool searchInServer)
 void ClientModel::openSelectedDir(const QModelIndex &index)
 {
     qDebug() << "Selected in Local: Clicked on row: " << index.row() << " on colum: " << index.column();
-    // TBD
     QModelIndex selectedIndex = m_localFileSystem->index(index.row(), 0, index.parent());
     bool isDir = m_localFileSystem->isDir(selectedIndex);
     if(isDir) {
         QString filePath = m_localFileSystem->filePath(selectedIndex);
-        setFileSystem(filePath);
+        setLocalFileSystem(filePath);
     } else {
         QString fileName = m_localFileSystem->fileName(selectedIndex);
         emit writeTextSignal(fileName + " isn't a directory", Qt::red);
     }
 }
 
-void ClientModel::deleteInLocal(QModelIndexList &listIndex)
+void ClientModel::deleteInLocal(const QModelIndexList& listIndex)
 {
     for(int i = 0; i < listIndex.count(); i++) {
         QString filePath = m_localFileSystem->filePath(listIndex[i]);
@@ -98,8 +98,11 @@ void ClientModel::deleteInLocal(QModelIndexList &listIndex)
 
 void ClientModel::returnPreviousFolderServer()
 {
+    if(m_currentServerDir.isEmpty()) {
+        return;
+    }
     if(!m_serverFileList.isEmpty()) {
-        QMap<QString, QString> requestVariables{
+        QMap<QString, QString> requestVariables {
             {"requestPath", FileHandler::getPreviousFolderPath(m_currentServerDir) }
         };
         QJsonObject request = RequestManager::createServerRequest(RequestManager::RequestType::ChangeDir, requestVariables);
@@ -108,7 +111,7 @@ void ClientModel::returnPreviousFolderServer()
     }
 }
 
-void ClientModel::deleteInServer(QModelIndexList &listIndex)
+void ClientModel::deleteInServer(const QModelIndexList& listIndex)
 {
     QStringList deletePaths;
     for (int i = 0; i < listIndex.count(); ++i) {
@@ -116,6 +119,34 @@ void ClientModel::deleteInServer(QModelIndexList &listIndex)
     }
     emit writeTextSignal("Deleting: " + QString::number(deletePaths.count()) + " items from the server.", Qt::blue);
     QJsonObject request = RequestManager::createServerRequest(RequestManager::RequestType::Delete, {}, deletePaths);
+    QByteArray data = DataConverter::JsonObjectToByteArray(request);
+    emit sendCommandDataSignal(data);
+}
+
+void ClientModel::openSelectedDirInServer(const QModelIndex &index)
+{
+    int selectedRow = index.row();
+    if(m_serverFileList[selectedRow].m_isDir) {
+        QMap<QString, QString> requestVariables {
+            {"requestPath", m_serverFileList[selectedRow].m_filePath }
+        };
+        QJsonObject request = RequestManager::createServerRequest(RequestManager::RequestType::ChangeDir, requestVariables);
+        QByteArray data = DataConverter::JsonObjectToByteArray(request);
+        emit sendCommandDataSignal(data);
+    } else {
+        QString fileName = m_serverFileList[selectedRow].m_fileName;
+        emit writeTextSignal(fileName + " isn't a directory", Qt::red);
+    }
+}
+
+void ClientModel::downloadFiles(const QModelIndexList &listIndex)
+{
+    QStringList downloadPaths;
+    for (int i = 0; i < listIndex.count(); ++i) {
+        downloadPaths.append(m_serverFileList[listIndex[i].row()].m_filePath);
+    }
+    QJsonObject request = RequestManager::createDownloadRequest(m_currentLocalDir, downloadPaths);
+    qDebug() << "Request Download: " << request;
     QByteArray data = DataConverter::JsonObjectToByteArray(request);
     emit sendCommandDataSignal(data);
 }
@@ -163,60 +194,53 @@ void ClientModel::parseJsonRecd(const QByteArray &data)
     QJsonObject serverResponseInfo = jsonArray.first().toObject();
     RequestManager::ResponseType responseType = static_cast<RequestManager::ResponseType>(serverResponseInfo.value("response_status").toInt());
 
-    m_currentServerDir = serverResponseInfo.value("directory").toString();
-    qDebug() << "Server Dir: " << m_currentServerDir;
-    emit writeTextSignal("Server Dir: " + m_currentServerDir, Qt::darkBlue);
+    if(!(serverResponseInfo.value("directory").toString().isEmpty())) {
+        m_currentServerDir = serverResponseInfo.value("directory").toString();
+        qDebug() << "Server Dir: " << m_currentServerDir;
+        emit writeTextSignal("Server Dir: " + m_currentServerDir, Qt::darkBlue);
+    }
 
     switch (responseType) {
     case RequestManager::ResponseType::ActiveConnected:
         qDebug() << "Response: Active Connected";
         m_isActiveMode = true;
-        m_serverFileList.clear();
-        m_serverFileList = FileHandler::getFileListFromJson(jsonArray);
-        m_serverFileSystem = new FileListServerModel(m_serverFileList, this);
+        this->setServerFileSystem(jsonArray);
         emit writeTextSignal("Established connection successfully!", Qt::darkBlue);
-        emit connectedToServerSignal(m_serverFileSystem, m_currentServerDir);
         break;
 
     case RequestManager::ResponseType::PassiveConnected:
-        m_isActiveMode = false;
         qDebug() << "Response: Passive Connected";
-        m_serverFileList.clear();
-        m_serverFileList = FileHandler::getFileListFromJson(jsonArray);
-        m_serverFileSystem = new FileListServerModel(m_serverFileList, this);
+        m_isActiveMode = false;
+        this->setServerFileSystem(jsonArray);
         emit writeTextSignal("Established connection successfully!", Qt::darkBlue);
-        emit connectedToServerSignal(m_serverFileSystem, m_currentServerDir);
         break;
 
     case RequestManager::ResponseType::ChangedDir:
         qDebug() << "Response: Directory Changed";
-        m_serverFileList.clear();
-        m_serverFileList = FileHandler::getFileListFromJson(jsonArray);
-        if(m_serverFileSystem) {
-            delete m_serverFileSystem;
-            m_serverFileSystem = nullptr;
-        }
-        m_serverFileSystem = new FileListServerModel(m_serverFileList, this);
+        this->setServerFileSystem(jsonArray);
         emit writeTextSignal("Changed directory successfully!", Qt::darkBlue);
-        emit connectedToServerSignal(m_serverFileSystem, m_currentServerDir);
         break;
 
     case RequestManager::ResponseType::Deleted:
         qDebug() << "Response: File Deleted";
+        this->setServerFileSystem(jsonArray);
         emit writeTextSignal("Deleted successfully!", Qt::darkBlue);
         break;
 
     case RequestManager::ResponseType::UnDeleted:
         qDebug() << "Response: Some file were not deleted";
+        this->setServerFileSystem(jsonArray);
         emit writeTextSignal("Some file were not deleted", Qt::red);
         break;
 
     case RequestManager::ResponseType::DownloadedFile:
         qDebug() << "Response: File Downloaded";
+        emit downloadedFileSignal(serverResponseInfo);
         break;
 
     case RequestManager::ResponseType::DownloadingFile:
         qDebug() << "Response: Downloading File...";
+        emit downloadingFileSignal(serverResponseInfo);
         break;
 
     case RequestManager::ResponseType::UploadedFile:
@@ -234,11 +258,22 @@ void ClientModel::parseJsonRecd(const QByteArray &data)
 }
 
 // Private method
-void ClientModel::setFileSystem(QString pathDir)
+void ClientModel::setLocalFileSystem(const QString& pathDir)
 {
-
     m_currentLocalDir = pathDir;
     m_settingsManager.setDefaultDirectory(m_currentLocalDir);
     m_localFileSystem->setRootPath(m_currentLocalDir);
     emit setLocalFileSystemSignal(m_localFileSystem);
+}
+
+void ClientModel::setServerFileSystem(const QJsonArray &jsonArray)
+{
+    m_serverFileList.clear();
+    m_serverFileList = FileHandler::getFileListFromJson(jsonArray);
+    if(m_serverFileSystem) {
+        delete m_serverFileSystem;
+        m_serverFileSystem = nullptr;
+    }
+    m_serverFileSystem = new FileListServerModel(m_serverFileList, this);
+    emit connectedToServerSignal(m_serverFileSystem, m_currentServerDir);
 }

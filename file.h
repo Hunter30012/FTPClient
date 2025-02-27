@@ -13,11 +13,6 @@ public:
 
     File() {};
 
-    bool isEmpty()
-    {
-        return m_fileName.isEmpty();
-    }
-
     QString m_fileType;
     QString m_fileName;
     QString m_filePath;
