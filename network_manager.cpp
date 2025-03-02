@@ -1,16 +1,16 @@
 #include "network_manager.h"
 
 NetworkManager::NetworkManager(QObject *parent)
-    : QObject{parent}, m_isDownloading {false}
+    : QObject{parent}
 {
     // connect to ActiveData Thread
     connect(&m_commandThread, &CommandThread::startActiveDataThreadSignal, &m_activeDataThread, &ActiveDataThread::startThread, Qt::QueuedConnection);
     connect(&m_commandThread, &CommandThread::stopActiveDataSignal, &m_activeDataThread, &ActiveDataThread::stopListening, Qt::QueuedConnection);
-    connect(&m_commandThread, &CommandThread::restartActiveDataSignal, &m_activeDataThread, &ActiveDataThread::restartListening, Qt::QueuedConnection);
+    connect(&m_commandThread, &CommandThread::restartActiveListeningSignal, &m_activeDataThread, &ActiveDataThread::restartListening, Qt::QueuedConnection);
     //connect to PassiveDataThread
     connect(&m_commandThread, &CommandThread::startPassiveDataThreadSignal, &m_passiveDataThread, &PassiveDataThread::startThread, Qt::QueuedConnection);
     connect(&m_commandThread, &CommandThread::stopPassiveDataSignal, &m_passiveDataThread, &PassiveDataThread::stopConnection, Qt::QueuedConnection);
-    connect(&m_commandThread, &CommandThread::restartPassiveDataThreadSignal, &m_passiveDataThread, &PassiveDataThread::restartConnection, Qt::QueuedConnection);
+    connect(&m_commandThread, &CommandThread::restartPassiveConnectionSignal, &m_passiveDataThread, &PassiveDataThread::restartConnection, Qt::QueuedConnection);
 }
 
 NetworkManager::~NetworkManager()
@@ -96,6 +96,15 @@ void NetworkManager::onDownloadedFile(const QJsonObject &obj)
     } else {
         // downloaded big file
         m_saveFile.commit();
+        QFile finalFile(localSavePath);
+        if (!finalFile.open(QIODevice::ReadOnly)) {
+            emit writeTextSignal("Failed to open downloaded file", Qt::red);
+            return;
+        }
+        if(finalFile.size() != sizeFile) {
+            emit writeTextSignal("Download file " + fileName + " lost some data!", Qt::red);
+            return;
+        }
         emit writeTextSignal("Download file " + fileName + " successfully!", Qt::darkBlue);
     }
 }
@@ -128,7 +137,7 @@ void NetworkManager::onDownloadingFile(const QJsonObject &obj)
     m_saveFile.write(dataPacket);
     emit writeTextSignal(QString("Received %1/%2 bytes for file: %3")
                              .arg(writtenBytes).arg(sizeFile).arg(fileName),
-                         Qt::darkBlue);
+                         Qt::darkYellow);
 
     // if (writtenBytes >= sizeFile) {
     //     m_saveFile.commit();

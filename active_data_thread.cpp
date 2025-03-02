@@ -36,9 +36,9 @@ ActiveDataThread::~ActiveDataThread()
 void ActiveDataThread::startThread()
 {
     if (!m_thread.isRunning()) {
+        qDebug() << "Start Active Data Thread";
         this->moveToThread(&m_thread);
         connect(&m_thread, &QThread::started, this, &ActiveDataThread::onStarted);
-        qDebug() << "Start Active Data Thread";
         m_thread.start();
 
     }
@@ -95,6 +95,88 @@ void ActiveDataThread::sendData(const QByteArray &data)
     } else {
         qWarning() << "No active connection to write data.";
     }
+}
+
+void ActiveDataThread::uploadRequest(bool isDir, const QString &filePath, const QString &fileName, const QString &serverCurDir)
+{
+    QFile qFile;
+    const qint64 packetSize = 20000;
+    quint64 writtenBytes = 0;
+    quint64 size = 0;
+    QByteArray fileData;
+
+    // Folder
+    if(isDir) {
+        QJsonObject request = RequestManager::createUploadRequest(RequestManager::RequestType::UploadedFile,
+                                                                  filePath,
+                                                                  serverCurDir,
+                                                                  fileName,
+                                                                  true);
+        qDebug() << "Request Upload: " << request;
+        QByteArray data = DataConverter::JsonObjectToByteArray(request);
+        this->sendData(data);
+        return;
+    }
+
+    // File
+    qFile.setFileName(filePath);
+    size = qFile.size();
+    if (!qFile.open(QIODevice::ReadOnly) || !qFile.isReadable()) {
+        emit writeTextSignal("Can not open file: " + filePath, Qt::red);
+        return;
+    }
+    // Send file immediately
+    if(size < packetSize) {
+        writtenBytes = size;
+        fileData = qFile.read(size);
+        QJsonObject request = RequestManager::createUploadRequest(
+            RequestManager::RequestType::UploadedFile,
+            filePath,
+            serverCurDir,
+            fileName,
+            false,
+            writtenBytes,
+            size,
+            fileData);
+        this->sendData(DataConverter::JsonObjectToByteArray(request));
+        emit writeTextSignal("Transfered file " + fileName +" to Server!", Qt::darkBlue);
+        QThread::msleep(10);
+        return;
+    }
+    // Split file into chunks and send
+    while (writtenBytes < size) {
+        qFile.seek(writtenBytes);
+        fileData = qFile.read(packetSize);
+        quint64 currentChunkSize = fileData.size();
+        writtenBytes += currentChunkSize;
+
+        QJsonObject request = RequestManager::createUploadRequest(
+            RequestManager::RequestType::UploadingFile,
+            filePath,
+            serverCurDir,
+            fileName,
+            false,
+            writtenBytes,
+            size,
+            fileData);
+        emit writeTextSignal(QString("Sent %1/%2 bytes for file: %3")
+                                 .arg(writtenBytes).arg(size).arg(fileName),
+                             Qt::darkYellow);
+        this->sendData(DataConverter::JsonObjectToByteArray(request));
+        QThread::msleep(10);
+    }
+    // download big file: Done
+    QJsonObject request = RequestManager::createUploadRequest(
+        RequestManager::RequestType::UploadedFile,
+        filePath,
+        serverCurDir,
+        fileName,
+        false,
+        writtenBytes,
+        size,
+        fileData);
+    this->sendData(DataConverter::JsonObjectToByteArray(request));
+    emit writeTextSignal("Finished sending file: " + fileName, Qt::darkGreen);
 }
 
 void ActiveDataThread::onReadyRead()

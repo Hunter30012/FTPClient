@@ -7,6 +7,9 @@
 #include <QTcpSocket>
 #include <QColor>
 #include <QNetworkInterface>
+#include <QFile>
+#include "request_manager.h"
+#include "data_converter.h"
 
 class ActiveDataThread : public QObject
 {
@@ -24,16 +27,13 @@ public slots:
     void startThread();
     void restartListening(int port);
     void stopListening();
-
+    void sendData(const QByteArray& data);
+    void uploadRequest(bool isDir, const QString& filePath, const QString& fileName, const QString& serverCurDir);
 private slots:
     void onStarted();
-
     void onNewConnection();
     void onReadyRead();
     void disconnected();
-
-    void sendData(const QByteArray& data);
-
 private:
     int m_port;
     QHostAddress m_address;

@@ -50,13 +50,13 @@ void ClientWindow::openInLocal()
                                                     QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks | QFileDialog::ReadOnly);
     if(!dir.isEmpty()) {
         // signal to set selected folder in Model
-        emit openFolderSignal(dir, false);
+        emit openFolderSignal(dir);
     }
 }
 
 void ClientWindow::localSearch()
 {
-    emit openFolderSignal(ui->localSearchEdit->text(), false);
+    emit openFolderSignal(ui->localSearchEdit->text());
 }
 
 void ClientWindow::deleteInLocal()
@@ -101,6 +101,16 @@ void ClientWindow::downloadFiles()
         return;
     }
     emit downloadFilesSignal(selectedRows);
+}
+
+void ClientWindow::uploadFiles()
+{
+    QModelIndexList selectedRows = ui->localFSTableView->selectionModel()->selectedRows();
+    if(selectedRows.isEmpty()) {
+        writeTextToOutput("Please select files to upload!", Qt::red);
+        return;
+    }
+    emit uploadFilesSignal(selectedRows);
 }
 
 void ClientWindow::clearOutput()
@@ -151,7 +161,7 @@ void ClientWindow::connectedToServer(FileListServerModel *model, const QString &
     ui->serverTableView->setModel(model);
     ui->serverTableView->setColumnWidth(0, 5);
     ui->serverTableView->setColumnWidth(1, 200);
-    ui->serverTableView->setColumnWidth(2, 60);
+    ui->serverTableView->setColumnWidth(2, 90);
     ui->serverTableView->setColumnWidth(3, 90);
     ui->serverTableView->setColumnWidth(4, 150);
     ui->serverTableView->setColumnWidth(5, 200);

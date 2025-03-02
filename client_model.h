@@ -30,14 +30,17 @@ signals:
 
     void connectedToServerSignal(FileListServerModel *model, const QString& curDir);
     void sendCommandDataSignal(const QByteArray& data);
+    // Download
     void downloadedFileSignal(const QJsonObject& obj);
     void downloadingFileSignal(const QJsonObject& obj);
+    // Upload
+    void uploadRequestSignal(bool isDir, const QString& filePath, const QString& fileName, const QString& serverCurDir);
 
 public slots:
     // Local Interaction
     void browseHomeLocal();
     void returnPreviousFolderLocal();
-    void openFolder(const QString& dir, bool searchInServer);
+    void openFolder(const QString& dir);
     void openSelectedDir(const QModelIndex& index);
 
     void deleteInLocal(const QModelIndexList& listIndex);
@@ -46,6 +49,7 @@ public slots:
     void deleteInServer(const QModelIndexList& listIndex);
     void openSelectedDirInServer(const QModelIndex& index);
     void downloadFiles(const QModelIndexList& listIndex);
+    void uploadFiles(const QModelIndexList& listIndex);
 
     // connect to Server
     void connectToServer(const bool& saveInformation, const QString& serverAddress, const QString& serverPort, const bool& isActive);
@@ -53,6 +57,7 @@ public slots:
 
     // handle data from Server
     void parseJsonRecd(const QByteArray& data);
+    void handleUploadedInfo(const QString& localPathFolder, const QString& saveServerPath);
 
 private:
     void setLocalFileSystem(const QString& pathDir);

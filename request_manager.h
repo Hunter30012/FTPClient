@@ -16,7 +16,8 @@ public:
         ChangeDir,
         Delete,
         DownloadFile,
-        UploadFile,
+        UploadedFile,
+        UploadingFile,
     };
 
     enum class ResponseType
@@ -34,6 +35,14 @@ public:
 
     static QJsonObject createServerRequest(RequestManager::RequestType action, const QMap<QString, QString>& requestVariables = {}, const QStringList& deleteFiles ={});
     static QJsonObject createDownloadRequest(const QString& localPath, const QStringList& serverFiles);
+    static QJsonObject createUploadRequest(RequestManager::RequestType action,
+                                           const QString& localPath,
+                                           const QString& serverPath,
+                                           const QString& fileName,
+                                           bool isDir,
+                                           quint64 writtenBytes = 0,
+                                           quint64 sizeFile = 0,
+                                           const QByteArray& data = QByteArray());
     static bool checkIfDataIsJson(const QByteArray& data);
 private:
     RequestManager();

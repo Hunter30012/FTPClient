@@ -37,6 +37,29 @@ QJsonObject RequestManager::createDownloadRequest(const QString &localPath, cons
     return request;
 }
 
+QJsonObject RequestManager::createUploadRequest(RequestType action,
+                                                const QString &localPath,
+                                                const QString &serverPath,
+                                                const QString &fileName,
+                                                bool isDir,
+                                                quint64 writtenBytes,
+                                                quint64 sizeFile,
+                                                const QByteArray &data)
+{
+    QJsonObject request;
+    request["request_type"] = static_cast<int>(action);
+    request["localPath"] = localPath;
+    request["isDir"] = isDir;
+    request["fileNameLocal"] = fileName;
+    request["serverPath"] = serverPath;
+    if(!isDir) {
+        request["writtenBytes"] = QString::number(writtenBytes);
+        request["sizeFile"] = QString::number(sizeFile);
+        request["dataPacket"] = QString::fromLatin1(data.toBase64());
+    }
+    return request;
+}
+
 
 bool RequestManager::checkIfDataIsJson(const QByteArray& data)
 {

@@ -80,10 +80,20 @@ void CommandThread::connected()
     emit writeTextSignal("Connected from IP: " + m_socket->peerAddress().toString() +  ":" + QString::number(m_serverPort), Qt::darkBlue);
     emit enableDisconnectSignal();
 
-    // Check mode
+    // Check mode to start data socket
     if(m_isActiveMode) {
-        // start data socket
-        emit restartActiveDataSignal(5050);
+        // select port
+        QTcpServer server;
+        int data_port = 5050;
+        while (data_port < 65535) {
+            if (server.listen(QHostAddress::Any, data_port)) {
+                server.close();
+                break;
+            }
+            data_port++;
+        }
+
+        emit restartActiveListeningSignal(data_port);
         qDebug() << "Send Active Mode command";
 
         QHostAddress hostAddress;
@@ -97,7 +107,7 @@ void CommandThread::connected()
         }
         QMap<QString, QString> requestVariables {
             {"address_data_thread", hostAddress.toString()},
-            {"port_data_thread", QString::number(5050)},
+            {"port_data_thread", QString::number(data_port)},
         };
         QJsonObject request = RequestManager::createServerRequest(RequestManager::RequestType::ActiveConnect, requestVariables);
         QByteArray requestData = DataConverter::JsonObjectToByteArray(request);
@@ -107,7 +117,7 @@ void CommandThread::connected()
         QJsonObject request = RequestManager::createServerRequest(RequestManager::RequestType::PassiveConnect);
         QByteArray requestData = DataConverter::JsonObjectToByteArray(request);
         this->sendData(requestData);
-        emit restartPassiveDataThreadSignal(m_serverIp, m_serverPort + 1);
+        emit restartPassiveConnectionSignal(m_serverIp, m_serverPort + 1);
     }
 }
 
@@ -165,9 +175,9 @@ void CommandThread::onReadyRead()
 {
     qDebug() << "onReadyRead: " << QThread::currentThread();
     QByteArray data = m_socket->readAll();
-    qDebug() << "Received from Server: " << data;
+    // qDebug() << "Received from Server: " << data;
     // handle Data
-    // emit dataReceivedSignal(data);
+    emit dataReceivedSignal(data);
 }
 
 void CommandThread::onError(QAbstractSocket::SocketError socketError)

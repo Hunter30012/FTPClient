@@ -21,12 +21,13 @@ public:
     ~ClientWindow();
 
 signals:
-    void openFolderSignal(const QString& dir, bool openInServer);
+    void openFolderSignal(const QString& dir);
     void deleteInLocalSignal(const QModelIndexList& listIndex);
     void connectToServerSignal(const bool& saveInformation, const QString& serverAddress, const QString& serverPort, const bool& isActive);
 
     void deleteInServerSignal(const QModelIndexList& listIndex);
     void downloadFilesSignal(const QModelIndexList& listIndex);
+    void uploadFilesSignal(const QModelIndexList& listIndex);
 public slots:
     void writeTextToOutput(QString text, QColor color);
     void setLocalFileSystem(QFileSystemModel* model);
@@ -39,7 +40,7 @@ public slots:
 
     void deleteInServer();
     void downloadFiles();
-
+    void uploadFiles();
     // clear
     void clearOutput();
 

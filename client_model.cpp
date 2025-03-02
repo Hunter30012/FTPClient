@@ -29,43 +29,38 @@ void ClientModel::init()
 void ClientModel::browseHomeLocal()
 {
     qDebug() << "Click Home in Local";
-    setLocalFileSystem("");
+    this->setLocalFileSystem("");
 }
 
 void ClientModel::returnPreviousFolderLocal()
 {
     qDebug() << "Click Return in Local";
     QString path = FileHandler::getPreviousFolderPath(m_currentLocalDir);
-    setLocalFileSystem(path);
+    this->setLocalFileSystem(path);
 }
 
-void ClientModel::openFolder(const QString &dir, bool searchInServer)
+void ClientModel::openFolder(const QString &dir)
 {
     qDebug() << "Open Folder";
-    if(searchInServer) {
-        // open Folder in Server by searching
+    QDir pathDir(dir);
+    if(pathDir.exists()) {
+        this->setLocalFileSystem(dir);
+        emit writeTextSignal("Open " + dir + " successfully.", Qt::blue);
     } else {
-        // open Folder in Local
-        QDir pathDir(dir);
-        if(pathDir.exists()) {
-            setLocalFileSystem(dir);
-            emit writeTextSignal("Open " + dir + " successfully.", Qt::blue);
-        } else {
-            emit writeTextSignal("Open " + dir + " unsuccessfully.", Qt::red);
-        }
+        emit writeTextSignal("Open " + dir + " unsuccessfully.", Qt::red);
     }
 }
 
 void ClientModel::openSelectedDir(const QModelIndex &index)
 {
     qDebug() << "Selected in Local: Clicked on row: " << index.row() << " on colum: " << index.column();
-    QModelIndex selectedIndex = m_localFileSystem->index(index.row(), 0, index.parent());
-    bool isDir = m_localFileSystem->isDir(selectedIndex);
-    if(isDir) {
-        QString filePath = m_localFileSystem->filePath(selectedIndex);
-        setLocalFileSystem(filePath);
+    QString filePath = m_localFileSystem->filePath(index);
+    QFileInfo fileInfo(filePath);
+
+    if(fileInfo.isDir()) {
+        this->setLocalFileSystem(filePath);
     } else {
-        QString fileName = m_localFileSystem->fileName(selectedIndex);
+        QString fileName = m_localFileSystem->fileName(index);
         emit writeTextSignal(fileName + " isn't a directory", Qt::red);
     }
 }
@@ -101,14 +96,12 @@ void ClientModel::returnPreviousFolderServer()
     if(m_currentServerDir.isEmpty()) {
         return;
     }
-    if(!m_serverFileList.isEmpty()) {
-        QMap<QString, QString> requestVariables {
-            {"requestPath", FileHandler::getPreviousFolderPath(m_currentServerDir) }
-        };
-        QJsonObject request = RequestManager::createServerRequest(RequestManager::RequestType::ChangeDir, requestVariables);
-        QByteArray data = DataConverter::JsonObjectToByteArray(request);
-        emit sendCommandDataSignal(data);
-    }
+    QMap<QString, QString> requestVariables {
+        {"requestPath", FileHandler::getPreviousFolderPath(m_currentServerDir) }
+    };
+    QJsonObject request = RequestManager::createServerRequest(RequestManager::RequestType::ChangeDir, requestVariables);
+    QByteArray data = DataConverter::JsonObjectToByteArray(request);
+    emit sendCommandDataSignal(data);
 }
 
 void ClientModel::deleteInServer(const QModelIndexList& listIndex)
@@ -151,6 +144,23 @@ void ClientModel::downloadFiles(const QModelIndexList &listIndex)
     emit sendCommandDataSignal(data);
 }
 
+void ClientModel::uploadFiles(const QModelIndexList &listIndex)
+{
+    for(int i = 0; i < listIndex.count(); i++) {
+        QString filePath = m_localFileSystem->filePath(listIndex[i]);
+        QString fileName = m_localFileSystem->fileName(listIndex[i]);
+        QFileInfo fileInfo(filePath);
+
+        // Folder
+        if(fileInfo.isDir()) {
+            emit uploadRequestSignal(true, filePath, fileName, m_currentServerDir);
+            continue;
+        }
+        // File
+        emit uploadRequestSignal(false, filePath, fileName, m_currentServerDir);
+    }
+}
+
 void ClientModel::connectToServer(const bool &saveInformation, const QString &serverAddress, const QString &serverPort, const bool& isActive)
 {
     QHostAddress address(serverAddress);
@@ -189,8 +199,7 @@ void ClientModel::parseJsonRecd(const QByteArray &data)
         emit writeTextSignal("Response from Server - Invalid Json format!", Qt::red);
         return;
     }
-    QJsonParseError jsonError;
-    QJsonArray jsonArray = QJsonDocument::fromJson(data, &jsonError).array();
+    QJsonArray jsonArray = QJsonDocument::fromJson(data).array();
     QJsonObject serverResponseInfo = jsonArray.first().toObject();
     RequestManager::ResponseType responseType = static_cast<RequestManager::ResponseType>(serverResponseInfo.value("response_status").toInt());
 
@@ -245,15 +254,46 @@ void ClientModel::parseJsonRecd(const QByteArray &data)
 
     case RequestManager::ResponseType::UploadedFile:
         qDebug() << "Response: File Uploaded";
-        break;
-
-    case RequestManager::ResponseType::UploadingFile:
-        qDebug() << "Response: Uploading File...";
+        // Folder or File
+        if (serverResponseInfo.contains("serverPath") && serverResponseInfo.contains("isDir") && serverResponseInfo.contains("isSuccess") && serverResponseInfo.contains("saveServerPath") && serverResponseInfo.contains("localPath")) {
+            qDebug() << "Handle: File Uploaded";
+            bool isDir = serverResponseInfo["isDir"].toBool();
+            bool isSuccess = serverResponseInfo["isSuccess"].toBool();
+            QString serverPath = serverResponseInfo["serverPath"].toString();
+            QString saveServerPath = serverResponseInfo["saveServerPath"].toString();
+            QString localPath = serverResponseInfo["localPath"].toString();
+            if(isDir && isSuccess) {
+                emit writeTextSignal("Created folder " + saveServerPath + " in server", Qt::darkBlue);
+                this->handleUploadedInfo(localPath, saveServerPath);
+            }
+            if(!isDir && isSuccess) {
+                emit writeTextSignal("Uploaded " + localPath + " successfully!", Qt::darkBlue);
+            }
+            if(serverPath == m_currentServerDir)
+                this->setServerFileSystem(jsonArray);
+        }
         break;
 
     default:
         qDebug() << "Response: Unknown Response Type";
         break;
+    }
+}
+
+void ClientModel::handleUploadedInfo(const QString& localPathFolder, const QString& saveServerPath)
+{
+    QDir directory(localPathFolder);
+    QFileInfoList filesInfo = directory.entryInfoList(QDir::NoDotAndDotDot | QDir::AllEntries);
+
+    for (int i = 0; i < filesInfo.count(); i++) {
+        QString filePath = filesInfo[i].absoluteFilePath();
+        QString fileName = filesInfo[i].fileName();
+        bool isDir = filesInfo[i].isDir();
+        if(isDir) {
+            emit uploadRequestSignal(true, filePath, fileName, saveServerPath);
+            continue;
+        }
+        emit uploadRequestSignal(false, filePath, fileName, saveServerPath);
     }
 }
 

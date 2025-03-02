@@ -32,12 +32,9 @@ public slots:
     void onDownloadedFile(const QJsonObject& obj);
     void onDownloadingFile(const QJsonObject& obj);
 private:
-    const qint64 packetSize = 10000;
-    bool m_isDownloading;
-    bool m_isUploading;
-
+    const qint64 packetSize = 20000;
     QSaveFile m_saveFile;
-    QByteArray dataToSend;
+
     CommandThread m_commandThread;
     PassiveDataThread m_passiveDataThread;
     ActiveDataThread m_activeDataThread;

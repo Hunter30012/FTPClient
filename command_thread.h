@@ -6,6 +6,7 @@
 #include <QThread>
 #include <QColor>
 #include <QNetworkInterface>
+#include <QTcpServer>
 #include "request_manager.h"
 #include "data_converter.h"
 
@@ -25,12 +26,12 @@ signals:
 
     // acticve mode
     void startActiveDataThreadSignal();
-    void restartActiveDataSignal(int port);
+    void restartActiveListeningSignal(int port);
     void stopActiveDataSignal();
 
     // passive mode
     void startPassiveDataThreadSignal();
-    void restartPassiveDataThreadSignal(const QHostAddress& address, int port);
+    void restartPassiveConnectionSignal(const QHostAddress& address, int port);
     void stopPassiveDataSignal();
 
     // Control Button

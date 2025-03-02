@@ -23,8 +23,8 @@ PassiveDataThread::~PassiveDataThread()
 
 void PassiveDataThread::startThread()
 {
-    qDebug() << "Start Passive Data Thread";
     if (!m_thread.isRunning()) {
+        qDebug() << "Start Passive Data Thread";
         this->moveToThread(&m_thread);
         connect(&m_thread, &QThread::started, this, &PassiveDataThread::onStarted);
         m_thread.start();
@@ -74,6 +74,7 @@ void PassiveDataThread::sendData(const QByteArray &data)
 {
     if (m_socket && m_socket->state() == QAbstractSocket::ConnectedState) {
         m_socket->write(data);
+        m_socket->flush();
     } else {
         qWarning() << "Cannot send data, no Passive connection!";
     }
